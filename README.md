@@ -1,6 +1,6 @@
-# 🔐 Sistema de Autenticación - GEEKS
+# 🔐 Sistema GEEKS
 
-Sistema completo de autenticación con backend funcional en .NET Core y estructura frontend preparada para desarrollo futuro.
+
 
 ## 📋 Funcionalidades Implementadas
 
@@ -158,14 +158,4 @@ GEEKS/
 4. **Autorización Avanzada** - Middleware de roles
 5. **Testing** - Unit tests y integration tests
 
-## 📝 Licencia
 
-Este proyecto es para fines educativos y de demostración.
-
-## 👨‍💻 Autor
-
-Desarrollado para demostración de sistema de autenticación completo.
-
----
-
-**¡El backend está 100% funcional y listo para usar!** 🎉
