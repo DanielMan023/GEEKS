@@ -20,15 +20,13 @@ namespace GEEKS.Seeds
             {
                 Console.WriteLine("🌱 Iniciando seeder de base de datos...");
                 
-                // Crear roles por defecto
+                // Crear roles primero y guardarlos
                 await SeedRolesAsync();
                 
-                // Crear usuario admin por defecto
+                // Crear usuario admin después
                 await SeedAdminUserAsync();
                 
-                // Guardar todos los cambios al final
-                var changes = await _context.SaveChangesAsync();
-                Console.WriteLine($"✅ Seeder completado. {changes} cambios guardados.");
+                Console.WriteLine("✅ Seeder completado.");
             }
             catch (Exception ex)
             {
@@ -39,7 +37,10 @@ namespace GEEKS.Seeds
 
         private async Task SeedRolesAsync()
         {
-            if (!_context.Roles.Any())
+            // Verificar si ya existen roles
+            var existingRoles = await _context.Roles.ToListAsync();
+            
+            if (!existingRoles.Any())
             {
                 Console.WriteLine("📝 Creando roles por defecto...");
                 var roles = new List<Role>
@@ -61,20 +62,30 @@ namespace GEEKS.Seeds
                 };
 
                 _context.Roles.AddRange(roles);
-                Console.WriteLine("✅ Roles creados: Admin, User");
+                
+                // Guardar roles inmediatamente para obtener los IDs
+                await _context.SaveChangesAsync();
+                Console.WriteLine("✅ Roles creados y guardados: Admin, User");
             }
             else
             {
-                Console.WriteLine("ℹ️ Roles ya existen, saltando creación...");
+                Console.WriteLine($"ℹ️ Roles ya existen ({existingRoles.Count} roles)");
             }
         }
 
         private async Task SeedAdminUserAsync()
         {
-            if (!_context.Users.Any())
+            // Verificar si ya existe el usuario admin
+            var existingAdmin = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == "admin@example.com");
+            
+            if (existingAdmin == null)
             {
                 Console.WriteLine("👤 Creando usuario administrador...");
+                
+                // Buscar el rol Admin en la base de datos
                 var adminRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+                
                 if (adminRole != null)
                 {
                     var adminUser = new User
@@ -88,16 +99,20 @@ namespace GEEKS.Seeds
                     };
 
                     _context.Users.Add(adminUser);
+                    
+                    // Guardar usuario admin
+                    await _context.SaveChangesAsync();
                     Console.WriteLine("✅ Usuario admin creado: admin@example.com / admin123");
                 }
                 else
                 {
                     Console.WriteLine("⚠️ No se encontró rol Admin para crear usuario");
+                    throw new Exception("Rol Admin no encontrado. El seeder de roles falló.");
                 }
             }
             else
             {
-                Console.WriteLine("ℹ️ Usuarios ya existen, saltando creación...");
+                Console.WriteLine("ℹ️ Usuario admin ya existe, saltando creación...");
             }
         }
     }
