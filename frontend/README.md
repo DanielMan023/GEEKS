@@ -135,3 +135,4 @@ El frontend está completamente optimizado para:
 ## 📄 Licencia
 
 Este proyecto es parte del sistema GEEKS de autenticación.
+
