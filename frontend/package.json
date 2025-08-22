@@ -2,6 +2,7 @@
   "name": "auth-template-frontend",
   "version": "1.0.0",
   "description": "Template de autenticación para React",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
