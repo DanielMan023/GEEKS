@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { Button, Input, PasswordInput } from './common';
 
 interface RegisterProps {
   onSwitchToLogin: () => void;
@@ -14,8 +15,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
     confirmPassword: ''
   });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error'>('error');
+  const [error, setError] = useState('');
 
   const { register } = useAuth();
 
@@ -28,37 +28,33 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
 
   const validateForm = () => {
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
-      setMessage('Por favor completa todos los campos');
-      setMessageType('error');
+      setError('Por favor completa todos los campos');
       return false;
     }
 
     if (formData.password.length < 6) {
-      setMessage('La contraseña debe tener al menos 6 caracteres');
-      setMessageType('error');
+      setError('La contraseña debe tener al menos 6 caracteres');
       return false;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setMessage('Las contraseñas no coinciden');
-      setMessageType('error');
+      setError('Las contraseñas no coinciden');
       return false;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setMessage('Por favor ingresa un email válido');
-      setMessageType('error');
+      setError('Por favor ingresa un email válido');
       return false;
     }
 
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
+    setError('');
 
     if (!validateForm()) {
       setLoading(false);
@@ -74,156 +70,134 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
       });
 
       if (result.success) {
-        setMessage(result.message);
-        setMessageType('success');
         // El contexto ya maneja el estado del usuario
       } else {
-        setMessage(result.message);
-        setMessageType('error');
+        setError(result.message);
       }
-    } catch (error) {
-      setMessage('Error inesperado. Intenta de nuevo.');
-      setMessageType('error');
+    } catch (err) {
+      setError('Error inesperado. Intenta de nuevo.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="form-card">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Crear cuenta
-          </h2>
-          <p className="text-gray-600">
-            Únete a nuestra comunidad
-          </p>
+    <main className="min-h-screen flex bg-[#0C0C0C]">
+      {/* Left Column */}
+      <section className="hidden lg:flex items-center justify-center flex-1 bg-[#0C0C0C]">
+        <div className="text-center">
+                      <img src="/geeks.png" alt="Logo GEEKS Enterprise" className="w-[960px] h-[960px] mx-auto mb-8" />
+
         </div>
+      </section>
 
-        {message && (
-          <div className={`mb-4 p-3 rounded-lg ${
-            messageType === 'success' 
-              ? 'bg-green-100 text-green-700 border border-green-200' 
-              : 'bg-red-100 text-red-700 border border-red-200'
-          }`}>
-            {message}
-          </div>
-        )}
+      {/* Right Column (Register Form) */}
+      <section className="flex items-center justify-center flex-1 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-[#424242] border-2 border-gray-500 shadow-2xl rounded-lg mx-4 my-4">
+        <form className="w-full max-w-sm space-y-6" onSubmit={handleSubmit}>
+          <header>
+            <h2 className="text-2xl font-extrabold text-[#E5E5E5]">
+              Crear cuenta en GEEKS
+            </h2>
+            <p className="mt-2 text-sm text-[#B3B3B3]">
+              Complete el formulario para unirse a nuestra plataforma
+            </p>
+          </header>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre
-              </label>
-              <input
+          <fieldset className="space-y-6">
+            {/* Name Fields */}
+            <div className="grid grid-cols-2 gap-4">
+              <Input
                 id="firstName"
                 name="firstName"
                 type="text"
-                autoComplete="given-name"
-                required
+                label="Nombre"
+                placeholder="Nombre"
                 value={formData.firstName}
                 onChange={handleChange}
-                className="input-field"
-                placeholder="Tu nombre"
+                required
+                autoComplete="given-name"
+                className="bg-[#424242] border-[#424242] text-white placeholder-white"
               />
-            </div>
 
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                Apellido
-              </label>
-              <input
+              <Input
                 id="lastName"
                 name="lastName"
                 type="text"
-                autoComplete="family-name"
-                required
+                label="Apellido"
+                placeholder="Apellido"
                 value={formData.lastName}
                 onChange={handleChange}
-                className="input-field"
-                placeholder="Tu apellido"
+                required
+                autoComplete="family-name"
+                className="bg-[#424242] border-[#424242] text-white placeholder-white"
               />
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Correo electrónico
-            </label>
-            <input
+            <Input
               id="email"
               name="email"
               type="email"
-              autoComplete="email"
-              required
+              label="Correo electrónico"
+              placeholder="Correo electrónico"
               value={formData.email}
               onChange={handleChange}
-              className="input-field"
-              placeholder="tu@email.com"
+              required
+              autoComplete="email"
+              className="bg-[#424242] border-[#424242] text-white placeholder-white"
             />
-          </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Contraseña
-            </label>
-            <input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
-              autoComplete="new-password"
-              required
+              label="Contraseña"
+              placeholder="••••••••"
               value={formData.password}
               onChange={handleChange}
-              className="input-field"
-              placeholder="••••••••"
+              required
+              autoComplete="new-password"
+              showMinLength={true}
+              className="bg-[#424242] border-[#424242] text-white placeholder-white"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Mínimo 6 caracteres
-            </p>
-          </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-              Confirmar contraseña
-            </label>
-            <input
+            <PasswordInput
               id="confirmPassword"
               name="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              required
+              label="Confirmar contraseña"
+              placeholder="••••••••"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="input-field"
-              placeholder="••••••••"
+              required
+              autoComplete="new-password"
+              className="bg-[#424242] border-[#424242] text-white placeholder-white"
             />
-          </div>
+          </fieldset>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Creando cuenta...' : 'Crear cuenta'}
-          </button>
+          <footer className="space-y-4">
+            {error && <span className="text-red-500 text-sm text-center block">{error}</span>}
+
+            <Button.Submit
+              content={loading ? 'Creando cuenta...' : 'Crear cuenta'}
+              width="full"
+              disabled={loading}
+              className="!py-2.5"
+            />
+            
+            <div className="text-center">
+              <p className="text-sm text-[#6C6975]">
+                ¿Ya tienes una cuenta?{' '}
+                <button
+                  type="button"
+                  onClick={onSwitchToLogin}
+                  className="text-[#6B9DFF] hover:text-[#4685FF] font-medium transition-colors duration-200"
+                >
+                  Inicia sesión aquí
+                </button>
+              </p>
+            </div>
+          </footer>
         </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            ¿Ya tienes una cuenta?{' '}
-            <button
-              onClick={onSwitchToLogin}
-              className="text-primary-600 hover:text-primary-700 font-medium"
-            >
-              Inicia sesión aquí
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 };
 

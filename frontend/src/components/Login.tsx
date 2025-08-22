@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { Button, Input, PasswordInput } from './common';
 
 interface LoginProps {
   onSwitchToRegister: () => void;
@@ -9,19 +10,17 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error'>('error');
+  const [error, setError] = useState('');
 
   const { login } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
+    setError('');
 
     if (!email || !password) {
-      setMessage('Por favor completa todos los campos');
-      setMessageType('error');
+      setError('Por favor completa todos los campos');
       setLoading(false);
       return;
     }
@@ -29,100 +28,92 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
     try {
       const result = await login(email, password);
       if (result.success) {
-        setMessage(result.message);
-        setMessageType('success');
         // El contexto ya maneja el estado del usuario
       } else {
-        setMessage(result.message);
-        setMessageType('error');
+        setError(result.message);
       }
-    } catch (error) {
-      setMessage('Error inesperado. Intenta de nuevo.');
-      setMessageType('error');
+    } catch (err) {
+      setError('Error inesperado. Intenta de nuevo.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="form-card">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Bienvenido de vuelta
-          </h2>
-          <p className="text-gray-600">
-            Inicia sesión en tu cuenta
-          </p>
+    <main className="min-h-screen flex bg-[#0C0C0C]">
+      {/* Left Column */}
+      <section className="hidden lg:flex items-center justify-center flex-1 bg-[#0C0C0C]">
+        <div className="text-center">
+          <img src="/geeks.png" alt="Logo GEEKS Enterprise" className="w-[960px] h-[960px] mx-auto mb-8" />
         </div>
+      </section>
 
-        {message && (
-          <div className={`mb-4 p-3 rounded-lg ${
-            messageType === 'success' 
-              ? 'bg-green-100 text-green-700 border border-green-200' 
-              : 'bg-red-100 text-red-700 border border-red-200'
-          }`}>
-            {message}
-          </div>
-        )}
+      {/* Right Column (Login Form) */}
+      <section className="flex items-center justify-center flex-1 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-[#424242] border-2 border-gray-500 shadow-2xl rounded-lg mx-4 my-4">
+        <form className="w-full max-w-sm space-y-6" onSubmit={handleSubmit}>
+          <header>
+            <h2 className="text-2xl font-extrabold text-[#E5E5E5]">
+              Bienvenido a GEEKS
+            </h2>
+            <p className="mt-2 text-sm text-[#B3B3B3]">
+              Por favor ingrese sus credenciales para ingresar
+            </p>
+          </header>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Correo electrónico
-            </label>
-            <input
+          <fieldset className="space-y-6">
+            <Input
               id="email"
               name="email"
               type="email"
-              autoComplete="email"
-              required
+              label="Correo electrónico"
+              placeholder="Correo electrónico"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input-field"
-              placeholder="tu@email.com"
+              required
+              autoComplete="email"
+              className="bg-[#424242] border-[#424242] text-white placeholder-white"
             />
-          </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Contraseña
-            </label>
-            <input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
-              autoComplete="current-password"
-              required
+              label="Contraseña"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
-              placeholder="••••••••"
+              required
+              autoComplete="current-password"
+              className="bg-[#424242] border-[#424242] text-white placeholder-white"
             />
-          </div>
+          </fieldset>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-          </button>
-        </form>
+          <footer className="space-y-4">
+            <nav className="flex justify-end">
+              <a href="#" className="text-sm font-medium text-[#6B9DFF] hover:text-[#4685FF] transition-colors duration-200">
+                ¿Olvidaste tu contraseña?
+              </a>
+            </nav>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            ¿No tienes una cuenta?{' '}
-            <button
+            {error && <span className="text-red-500 text-sm text-center block">{error}</span>}
+
+            <Button.Submit
+              content={loading ? 'Cargando...' : 'Ingresar'}
+              width="full"
+              disabled={loading}
+              className="!py-2.5"
+            />
+            <Button
+              content="Registrarte"
+              width="full"
+              disabled={loading}
+              className="!py-2.5 bg-blue-600 hover:bg-blue-700"
               onClick={onSwitchToRegister}
-              className="text-primary-600 hover:text-primary-700 font-medium"
-            >
-              Regístrate aquí
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
+              type="button"
+            />
+          </footer>
+        </form>
+      </section>
+    </main>
   );
 };
 
