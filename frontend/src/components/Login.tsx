@@ -47,10 +47,14 @@ export const Login = (): React.ReactElement => {
 
     setIsLoading(true);
     try {
-      await login(formData.email, formData.password);
-      navigate('/dashboard');
+      const result = await login(formData.email, formData.password);
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setErrors({ general: result.message });
+      }
     } catch (error) {
-      setErrors({ general: 'Credenciales inválidas. Por favor, inténtalo de nuevo.' });
+      setErrors({ general: 'Error inesperado. Por favor, inténtalo de nuevo.' });
     } finally {
       setIsLoading(false);
     }
@@ -80,12 +84,6 @@ export const Login = (): React.ReactElement => {
           </header>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {errors.general && (
-              <div className="bg-red-500 text-white p-3 rounded-lg text-sm text-center">
-                {errors.general}
-              </div>
-            )}
-
             <Input
               id="email"
               name="email"
@@ -121,6 +119,10 @@ export const Login = (): React.ReactElement => {
                 </a>
               </div>
             </div>
+
+            {errors.general && (
+              <p className="text-red-500 text-sm text-center">{errors.general}</p>
+            )}
 
             <Button.Submit
               content="Iniciar Sesión"
