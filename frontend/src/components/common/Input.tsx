@@ -37,10 +37,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
         autoComplete={autoComplete}
         value={value}
         onChange={onChange}
-        className={`w-full px-3 py-4 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all duration-200 peer placeholder-transparent text-white [&:-webkit-autofill]:bg-[#424242] [&:-webkit-autofill]:text-white [&:-webkit-autofill]:shadow-[0_0_0_30px_#424242_inset] [&:-webkit-autofill]:-webkit-text-fill-color-white ${className}`}
+        className={`w-full px-3 py-4 bg-[#424242] border border-black rounded-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all duration-200 peer placeholder-transparent text-white [&:-webkit-autofill]:!bg-[#424242] [&:-webkit-autofill]:!text-white [&:-webkit-autofill]:!shadow-[0_0_0_30px_#424242_inset] [&:-webkit-autofill]:!-webkit-text-fill-color-white [&:-webkit-autofill]:!color-white [&:-webkit-autofill]:!border-black ${className}`}
         placeholder=" "
         required={required}
         disabled={disabled}
+        style={{
+          WebkitTextFillColor: 'white !important',
+          color: 'white !important'
+        }}
       />
       <label
         htmlFor={id}

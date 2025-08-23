@@ -48,3 +48,25 @@
     color: #10B981;
   }
 }
+
+/* Fix for autocomplete text color */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0 30px #424242 inset !important;
+  background-color: #424242 !important;
+  color: white !important;
+  border-color: black !important;
+}
+
+/* Additional autocomplete fixes for different browsers */
+input[type="email"]:-webkit-autofill,
+input[type="password"]:-webkit-autofill,
+input[type="text"]:-webkit-autofill {
+  -webkit-text-fill-color: white !important;
+  color: white !important;
+  background-color: #424242 !important;
+  border-color: black !important;
+}

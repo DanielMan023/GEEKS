@@ -92,15 +92,12 @@ export const Register = (): React.ReactElement => {
       </section>
 
       {/* Right Section - Register Form */}
-      <section className="w-full lg:w-1/2 bg-[#424242] border-2 border-gray-500 shadow-2xl rounded-lg mx-4 my-4 flex items-center justify-center">
-        <div className="w-full max-w-md px-8 py-12">
-          <header className="text-center mb-8">
+      <section className="w-full lg:w-1/2 bg-[#424242] flex items-center justify-center">
+        <div className="w-full max-w-lg px-8 py-12">
+          <header className="text-left mb-8">
             <h1 className="text-4xl font-bold text-white mb-2">
-              GEEKS ENTERPRISE
+              Crear cuenta
             </h1>
-            <h2 className="text-2xl font-semibold text-white mb-2">
-              Crear cuenta en GEEKS
-            </h2>
             <p className="text-gray-300">
               Complete el formulario para unirse a nuestra plataforma
             </p>
@@ -153,7 +150,7 @@ export const Register = (): React.ReactElement => {
               id="email"
               name="email"
               type="email"
-              label="Email"
+              label="Correo o usuario"
               value={formData.email}
               onChange={handleChange}
               required
@@ -208,7 +205,7 @@ export const Register = (): React.ReactElement => {
               ¿Ya tienes una cuenta?{' '}
               <Link 
                 to="/login" 
-                className="text-green-600 hover:text-green-500 font-medium transition-colors"
+                className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
               >
                 Inicia sesión aquí
               </Link>
