@@ -3,20 +3,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { twMerge } from '../utils';
 import { useSidebar } from '../contexts/SidebarContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useRole } from '../hooks/useRole';
 
-const menuItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', to: '/dashboard', permission: 'dashboard.view' },
-  { icon: Building, label: 'Inventarios', to: '/dashboard/inventarios/lista', permission: 'inventories.view' },
-  { icon: Folder, label: 'Productos', to: '/dashboard/productos/lista', permission: 'products.view' },
-  { icon: ClipboardList, label: 'Pedidos', to: '/dashboard/pedidos/lista', permission: 'plans.view' },
-  { icon: CalendarCheck, label: 'Compras', to: '/dashboard/compras/lista', permission: 'subscriptions.view' },
-  { icon: Users, label: 'Usuarios', to: '/dashboard/usuarios/lista', permission: 'users.view' },
-  { icon: Headphones, label: 'Usuarios Administrativos', to: '/dashboard/usuarios-administrativos/lista', permission: 'admin-users.view' },
-];
-
-export default function Sidebar() {
+const Sidebar = () => {
   const { isCollapsed, toggleSidebar } = useSidebar();
   const { user, logout } = useAuth();
+  const { permissions, userRole } = useRole();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -28,6 +20,66 @@ export default function Sidebar() {
       console.error('Error al cerrar sesión:', error);
     }
   };
+
+  // Menú base que todos pueden ver
+  const baseMenuItems = [
+    { 
+      icon: LayoutDashboard, 
+      label: 'Dashboard', 
+      to: '/dashboard', 
+      permission: 'canViewDashboard',
+      show: true // Siempre visible
+    },
+    { 
+      icon: Building, 
+      label: 'Inventarios', 
+      to: '/dashboard/inventarios/lista', 
+      permission: 'canViewInventories',
+      show: permissions.canViewInventories
+    },
+    { 
+      icon: Folder, 
+      label: 'Productos', 
+      to: '/dashboard/productos/lista', 
+      permission: 'canViewProducts',
+      show: permissions.canViewProducts
+    },
+    { 
+      icon: ClipboardList, 
+      label: 'Pedidos', 
+      to: '/dashboard/pedidos/lista', 
+      permission: 'canViewOrders',
+      show: permissions.canViewOrders
+    },
+    { 
+      icon: CalendarCheck, 
+      label: 'Compras', 
+      to: '/dashboard/compras/lista', 
+      permission: 'canViewPurchases',
+      show: permissions.canViewPurchases
+    },
+  ];
+
+  // Menú solo para administradores
+  const adminMenuItems = [
+    { 
+      icon: Users, 
+      label: 'Usuarios', 
+      to: '/dashboard/usuarios/lista', 
+      permission: 'canViewUsers',
+      show: permissions.canViewUsers
+    },
+    { 
+      icon: Headphones, 
+      label: 'Usuarios Administrativos', 
+      to: '/dashboard/usuarios-administrativos/lista', 
+      permission: 'canViewAdminUsers',
+      show: permissions.canViewAdminUsers
+    },
+  ];
+
+  // Combinar menús y filtrar por permisos
+  const allMenuItems = [...baseMenuItems, ...adminMenuItems].filter(item => item.show);
 
   return (
     <div className={twMerge(
@@ -53,7 +105,7 @@ export default function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-2">
-          {menuItems.map((item) => {
+          {allMenuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.to;
             
@@ -86,6 +138,9 @@ export default function Sidebar() {
                 {user?.firstName} {user?.lastName}
               </div>
               <div className="text-xs text-gray-500 truncate">{user?.email}</div>
+              <div className="text-xs text-green-400 font-medium mt-1">
+                Rol: {userRole}
+              </div>
             </div>
           )}
           
@@ -105,4 +160,6 @@ export default function Sidebar() {
       </div>
     </div>
   );
-}
+};
+
+export default Sidebar;

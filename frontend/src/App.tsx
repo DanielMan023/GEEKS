@@ -5,8 +5,8 @@ import { SidebarProvider } from './contexts/SidebarContext';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
-import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
+import RouteGuard from './components/guards/RouteGuard';
 
 const AppContent: React.FC = () => {
   return (
@@ -29,9 +29,9 @@ const AppContent: React.FC = () => {
       
       {/* Rutas protegidas - solo accesibles si estás autenticado */}
       <Route path="/dashboard/*" element={
-        <ProtectedRoute>
+        <RouteGuard>
           <Dashboard />
-        </ProtectedRoute>
+        </RouteGuard>
       } />
       
       {/* Ruta por defecto - redirigir a dashboard */}

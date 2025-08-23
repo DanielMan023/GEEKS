@@ -66,15 +66,19 @@ export const Register = (): React.ReactElement => {
 
     setIsLoading(true);
     try {
-      await register({
+      const result = await register({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password
       });
-      navigate('/dashboard');
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setErrors({ general: result.message });
+      }
     } catch (error) {
-      setErrors({ general: 'Error al crear la cuenta. Por favor, inténtalo de nuevo.' });
+      setErrors({ general: 'Error inesperado. Por favor, inténtalo de nuevo.' });
     } finally {
       setIsLoading(false);
     }
