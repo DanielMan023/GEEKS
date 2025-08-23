@@ -1,0 +1,108 @@
+import { LayoutDashboard, Building, Folder, ClipboardList, CalendarCheck, Users, Headphones, Sun, Settings, LayoutPanelLeft } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { twMerge } from '../utils';
+import { useSidebar } from '../contexts/SidebarContext';
+import { useAuth } from '../contexts/AuthContext';
+
+const menuItems = [
+  { icon: LayoutDashboard, label: 'Dashboard', to: '/dashboard', permission: 'dashboard.view' },
+  { icon: Building, label: 'Inventarios', to: '/dashboard/inventarios/lista', permission: 'inventories.view' },
+  { icon: Folder, label: 'Productos', to: '/dashboard/productos/lista', permission: 'products.view' },
+  { icon: ClipboardList, label: 'Pedidos', to: '/dashboard/pedidos/lista', permission: 'plans.view' },
+  { icon: CalendarCheck, label: 'Compras', to: '/dashboard/compras/lista', permission: 'subscriptions.view' },
+  { icon: Users, label: 'Usuarios', to: '/dashboard/usuarios/lista', permission: 'users.view' },
+  { icon: Headphones, label: 'Usuarios Administrativos', to: '/dashboard/usuarios-administrativos/lista', permission: 'admin-users.view' },
+];
+
+export default function Sidebar() {
+  const { isCollapsed, toggleSidebar } = useSidebar();
+  const { user, logout } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
+
+  return (
+    <div className={twMerge(
+      "fixed left-0 top-0 z-40 h-screen transition-transform duration-300 ease-in-out",
+      isCollapsed ? "w-16" : "w-64"
+    )}>
+      <div className="flex h-full flex-col bg-[#1E1E1E] border-r border-gray-700">
+        {/* Header */}
+        <div className="flex h-16 items-center justify-between px-4 border-b border-gray-700">
+          {!isCollapsed && (
+            <div className="flex items-center space-x-2">
+              <img src="/geeks.png" alt="GEEKS" className="w-8 h-8 rounded" />
+              <span className="text-white font-semibold text-lg">GEEKS</span>
+            </div>
+          )}
+          <button
+            onClick={toggleSidebar}
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <LayoutPanelLeft className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-4 space-y-2">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.to;
+            
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={twMerge(
+                  "flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                  isActive
+                    ? "bg-green-600 text-white"
+                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                )}
+              >
+                <Icon className="w-5 h-5 flex-shrink-0" />
+                {!isCollapsed && (
+                  <span className="ml-3">{item.label}</span>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* User Section */}
+        <div className="border-t border-gray-700 p-4">
+          {!isCollapsed && (
+            <div className="mb-4">
+              <div className="text-sm text-gray-400">Usuario</div>
+              <div className="text-white font-medium truncate">
+                {user?.firstName} {user?.lastName}
+              </div>
+              <div className="text-xs text-gray-500 truncate">{user?.email}</div>
+            </div>
+          )}
+          
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleLogout}
+              className={twMerge(
+                "flex items-center px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition-colors",
+                isCollapsed ? "justify-center w-full" : ""
+              )}
+            >
+              <Settings className="w-5 h-5" />
+              {!isCollapsed && <span className="ml-3">Cerrar Sesión</span>}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
