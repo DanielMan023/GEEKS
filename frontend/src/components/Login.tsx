@@ -1,117 +1,145 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Button, Input, PasswordInput } from './common';
+import { Input, PasswordInput, Button } from './common';
 
-interface LoginProps {
-  onSwitchToRegister: () => void;
-}
-
-const Login: React.FC<LoginProps> = ({ onSwitchToRegister }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+export const Login = (): React.ReactElement => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Limpiar error del campo cuando el usuario empiece a escribir
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
 
-    if (!email || !password) {
-      setError('Por favor completa todos los campos');
-      setLoading(false);
-      return;
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'El email es requerido';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'El email no es válido';
     }
 
+    if (!formData.password.trim()) {
+      newErrors.password = 'La contraseña es requerida';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    setIsLoading(true);
     try {
-      const result = await login(email, password);
-      if (result.success) {
-        // El contexto ya maneja el estado del usuario
-      } else {
-        setError(result.message);
-      }
-    } catch (err) {
-      setError('Error inesperado. Intenta de nuevo.');
+      await login(formData.email, formData.password);
+      navigate('/dashboard');
+    } catch (error) {
+      setErrors({ general: 'Credenciales inválidas. Por favor, inténtalo de nuevo.' });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen flex bg-[#0C0C0C]">
-      {/* Left Column */}
-      <section className="hidden lg:flex items-center justify-center flex-1 bg-[#0C0C0C]">
-        <div className="text-center">
-          <img src="/geeks.png" alt="Logo GEEKS Enterprise" className="w-[960px] h-[960px] mx-auto mb-8" />
-        </div>
+    <main className="min-h-screen bg-[#0C0C0C] flex">
+      {/* Left Section - Logo */}
+      <section className="hidden lg:flex lg:w-1/2 bg-[#0C0C0C] items-center justify-center">
+        <img 
+          src="/geeks.png" 
+          alt="GEEKS Logo" 
+          className="w-[960px] h-[960px]"
+        />
       </section>
 
-      {/* Right Column (Login Form) */}
-      <section className="flex items-center justify-center flex-1 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-[#424242] border-2 border-gray-500 shadow-2xl rounded-lg mx-4 my-4">
-        <form className="w-full max-w-sm space-y-6" onSubmit={handleSubmit}>
-          <header>
-            <h2 className="text-2xl font-extrabold text-[#E5E5E5]">
+      {/* Right Section - Login Form */}
+      <section className="w-full lg:w-1/2 bg-[#424242] border-2 border-gray-500 shadow-2xl rounded-lg mx-4 my-4 flex items-center justify-center">
+        <div className="w-full max-w-md px-8 py-12">
+          <header className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white mb-2">
+              GEEKS ENTERPRISE
+            </h1>
+            <h2 className="text-2xl font-semibold text-white mb-2">
               Bienvenido a GEEKS
             </h2>
-            <p className="mt-2 text-sm text-[#B3B3B3]">
+            <p className="text-gray-300">
               Por favor ingrese sus credenciales para ingresar
             </p>
           </header>
 
-          <fieldset className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {errors.general && (
+              <div className="bg-red-500 text-white p-3 rounded-lg text-sm text-center">
+                {errors.general}
+              </div>
+            )}
+
             <Input
               id="email"
               name="email"
               type="email"
-              label="Correo electrónico"
-              placeholder="Correo electrónico"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              label="Email"
+              value={formData.email}
+              onChange={handleChange}
               required
               autoComplete="email"
-              className="bg-[#424242] border-[#424242] text-white placeholder-white"
+              className={errors.email ? 'border-red-500' : ''}
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
 
             <PasswordInput
               id="password"
               name="password"
               label="Contraseña"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={formData.password}
+              onChange={handleChange}
               required
               autoComplete="current-password"
-              className="bg-[#424242] border-[#424242] text-white placeholder-white"
+              className={errors.password ? 'border-red-500' : ''}
             />
-          </fieldset>
-
-          <footer className="space-y-4">
-            <nav className="flex justify-end">
-              <a href="#" className="text-sm font-medium text-[#6B9DFF] hover:text-[#4685FF] transition-colors duration-200">
-                ¿Olvidaste tu contraseña?
-              </a>
-            </nav>
-
-            {error && <span className="text-red-500 text-sm text-center block">{error}</span>}
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
 
             <Button.Submit
-              content={loading ? 'Cargando...' : 'Ingresar'}
+              content="Iniciar Sesión"
               width="full"
-              disabled={loading}
-              className="!py-2.5"
-            />
-            <Button
-              content="Registrarte"
-              width="full"
-              disabled={loading}
-              className="!py-2.5 bg-blue-600 hover:bg-blue-700"
-              onClick={onSwitchToRegister}
-              type="button"
-            />
-          </footer>
-        </form>
+              disabled={isLoading}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            </Button.Submit>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-gray-300">
+              ¿No tienes una cuenta?{' '}
+              <Link 
+                to="/register" 
+                className="text-green-400 hover:text-green-300 font-medium transition-colors"
+              >
+                Regístrate aquí
+              </Link>
+            </p>
+          </div>
+        </div>
       </section>
     </main>
   );

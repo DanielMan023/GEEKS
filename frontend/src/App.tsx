@@ -1,43 +1,51 @@
-import React, { useState } from 'react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { SidebarProvider } from './contexts/SidebarContext';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated, loading } = useAuth();
-  const [currentView, setCurrentView] = useState<'login' | 'register'>('login');
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isAuthenticated) {
-    return <Dashboard />;
-  }
-
   return (
-    <>
-      {currentView === 'login' ? (
-        <Login onSwitchToRegister={() => setCurrentView('register')} />
-      ) : (
-        <Register onSwitchToLogin={() => setCurrentView('login')} />
-      )}
-    </>
+    <Routes>
+      {/* Ruta raíz - redirigir según autenticación */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      
+      {/* Rutas públicas - solo accesibles si NO estás autenticado */}
+      <Route path="/login" element={
+        <PublicRoute>
+          <Login />
+        </PublicRoute>
+      } />
+      
+      <Route path="/register" element={
+        <PublicRoute>
+          <Register />
+        </PublicRoute>
+      } />
+      
+      {/* Rutas protegidas - solo accesibles si estás autenticado */}
+      <Route path="/dashboard/*" element={
+        <ProtectedRoute>
+          <Dashboard />
+        </ProtectedRoute>
+      } />
+      
+      {/* Ruta por defecto - redirigir a dashboard */}
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
   );
 };
 
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <AppContent />
+      <SidebarProvider>
+        <AppContent />
+      </SidebarProvider>
     </AuthProvider>
   );
 };
