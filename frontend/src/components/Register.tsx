@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Button, Input, PasswordInput } from './common';
+import { Input, PasswordInput, Button } from './common';
 
-interface RegisterProps {
-  onSwitchToLogin: () => void;
-}
-
-const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
+export const Register = (): React.ReactElement => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -14,188 +11,210 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
     password: '',
     confirmPassword: ''
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Limpiar error del campo cuando el usuario empiece a escribir
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
-  const validateForm = () => {
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
-      setError('Por favor completa todos los campos');
-      return false;
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'El nombre es requerido';
     }
 
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
-      return false;
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'El apellido es requerido';
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      return false;
+    if (!formData.email.trim()) {
+      newErrors.email = 'El email es requerido';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'El email no es válido';
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('Por favor ingresa un email válido');
-      return false;
+    if (!formData.password.trim()) {
+      newErrors.password = 'La contraseña es requerida';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
     }
 
-    return true;
+    if (!formData.confirmPassword.trim()) {
+      newErrors.confirmPassword = 'Confirma tu contraseña';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Las contraseñas no coinciden';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    
+    if (!validateForm()) return;
 
-    if (!validateForm()) {
-      setLoading(false);
-      return;
-    }
-
+    setIsLoading(true);
     try {
-      const result = await register({
+      await register({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password
       });
-
-      if (result.success) {
-        // El contexto ya maneja el estado del usuario
-      } else {
-        setError(result.message);
-      }
-    } catch (err) {
-      setError('Error inesperado. Intenta de nuevo.');
+      navigate('/dashboard');
+    } catch (error) {
+      setErrors({ general: 'Error al crear la cuenta. Por favor, inténtalo de nuevo.' });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen flex bg-[#0C0C0C]">
-      {/* Left Column */}
-      <section className="hidden lg:flex items-center justify-center flex-1 bg-[#0C0C0C]">
-        <div className="text-center">
-                      <img src="/geeks.png" alt="Logo GEEKS Enterprise" className="w-[960px] h-[960px] mx-auto mb-8" />
-
-        </div>
+    <main className="min-h-screen bg-[#0C0C0C] flex">
+      {/* Left Section - Logo */}
+      <section className="hidden lg:flex lg:w-1/2 bg-[#0C0C0C] items-center justify-center">
+        <img 
+          src="/geeks.png" 
+          alt="GEEKS Logo" 
+          className="w-[960px] h-[960px]"
+        />
       </section>
 
-      {/* Right Column (Register Form) */}
-      <section className="flex items-center justify-center flex-1 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-[#424242] border-2 border-gray-500 shadow-2xl rounded-lg mx-4 my-4">
-        <form className="w-full max-w-sm space-y-6" onSubmit={handleSubmit}>
-          <header>
-            <h2 className="text-2xl font-extrabold text-[#E5E5E5]">
+      {/* Right Section - Register Form */}
+      <section className="w-full lg:w-1/2 bg-[#424242] border-2 border-gray-500 shadow-2xl rounded-lg mx-4 my-4 flex items-center justify-center">
+        <div className="w-full max-w-md px-8 py-12">
+          <header className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white mb-2">
+              GEEKS ENTERPRISE
+            </h1>
+            <h2 className="text-2xl font-semibold text-white mb-2">
               Crear cuenta en GEEKS
             </h2>
-            <p className="mt-2 text-sm text-[#B3B3B3]">
+            <p className="text-gray-300">
               Complete el formulario para unirse a nuestra plataforma
             </p>
           </header>
 
-          <fieldset className="space-y-6">
-            {/* Name Fields */}
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                id="firstName"
-                name="firstName"
-                type="text"
-                label="Nombre"
-                placeholder="Nombre"
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-                autoComplete="given-name"
-                className="bg-[#424242] border-[#424242] text-white placeholder-white"
-              />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {errors.general && (
+              <div className="bg-red-500 text-white p-3 rounded-lg text-sm text-center">
+                {errors.general}
+              </div>
+            )}
 
-              <Input
-                id="lastName"
-                name="lastName"
-                type="text"
-                label="Apellido"
-                placeholder="Apellido"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-                autoComplete="family-name"
-                className="bg-[#424242] border-[#424242] text-white placeholder-white"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  label="Nombre"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
+                  autoComplete="given-name"
+                  className={errors.firstName ? 'border-red-500' : ''}
+                />
+                {errors.firstName && (
+                  <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
+                )}
+              </div>
+
+              <div>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  label="Apellido"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
+                  autoComplete="family-name"
+                  className={errors.lastName ? 'border-red-500' : ''}
+                />
+                {errors.lastName && (
+                  <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
+                )}
+              </div>
             </div>
 
             <Input
               id="email"
               name="email"
               type="email"
-              label="Correo electrónico"
-              placeholder="Correo electrónico"
+              label="Email"
               value={formData.email}
               onChange={handleChange}
               required
               autoComplete="email"
-              className="bg-[#424242] border-[#424242] text-white placeholder-white"
+              className={errors.email ? 'border-red-500' : ''}
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
 
             <PasswordInput
               id="password"
               name="password"
               label="Contraseña"
-              placeholder="••••••••"
               value={formData.password}
               onChange={handleChange}
               required
               autoComplete="new-password"
               showMinLength={true}
-              className="bg-[#424242] border-[#424242] text-white placeholder-white"
+              className={errors.password ? 'border-red-500' : ''}
             />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
 
             <PasswordInput
               id="confirmPassword"
               name="confirmPassword"
-              label="Confirmar contraseña"
-              placeholder="••••••••"
+              label="Confirmar Contraseña"
               value={formData.confirmPassword}
               onChange={handleChange}
               required
               autoComplete="new-password"
-              className="bg-[#424242] border-[#424242] text-white placeholder-white"
+              className={errors.confirmPassword ? 'border-red-500' : ''}
             />
-          </fieldset>
-
-          <footer className="space-y-4">
-            {error && <span className="text-red-500 text-sm text-center block">{error}</span>}
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+            )}
 
             <Button.Submit
-              content={loading ? 'Creando cuenta...' : 'Crear cuenta'}
+              content="Crear Cuenta"
               width="full"
-              disabled={loading}
-              className="!py-2.5"
-            />
-            
-            <div className="text-center">
-              <p className="text-sm text-[#6C6975]">
-                ¿Ya tienes una cuenta?{' '}
-                <button
-                  type="button"
-                  onClick={onSwitchToLogin}
-                  className="text-[#6B9DFF] hover:text-[#4685FF] font-medium transition-colors duration-200"
-                >
-                  Inicia sesión aquí
-                </button>
-              </p>
-            </div>
-          </footer>
-        </form>
+              disabled={isLoading}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
+            </Button.Submit>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-[#6C6975]">
+              ¿Ya tienes una cuenta?{' '}
+              <Link 
+                to="/login" 
+                className="text-green-600 hover:text-green-500 font-medium transition-colors"
+              >
+                Inicia sesión aquí
+              </Link>
+            </p>
+          </div>
+        </div>
       </section>
     </main>
   );
