@@ -11,6 +11,8 @@ namespace GEEKS.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Product> Products { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,6 +25,13 @@ namespace GEEKS.Data
                 .HasForeignKey(u => u.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Configuración de relaciones
+            modelBuilder.Entity<Category>()
+                .HasMany(c => c.Products)
+                .WithOne(p => p.Category)
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Configuración de índices únicos
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
@@ -30,6 +39,14 @@ namespace GEEKS.Data
 
             modelBuilder.Entity<Role>()
                 .HasIndex(r => r.Name)
+                .IsUnique();
+
+            modelBuilder.Entity<Category>()
+                .HasIndex(c => c.Name)
+                .IsUnique();
+
+            modelBuilder.Entity<Product>()
+                .HasIndex(p => p.SKU)
                 .IsUnique();
         }
     }
