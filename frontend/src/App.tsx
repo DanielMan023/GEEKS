@@ -6,6 +6,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import ProductCatalogPage from './pages/ProductCatalogPage';
+import ProductManagementPage from './pages/ProductManagementPage';
 import PublicRoute from './components/PublicRoute';
 import RouteGuard from './components/guards/RouteGuard';
 import RoleBasedRedirect from './components/RoleBasedRedirect';
@@ -39,6 +40,12 @@ const AppContent: React.FC = () => {
       <Route path="/catalog" element={
         <RouteGuard>
           <ProductCatalogPage />
+        </RouteGuard>
+      } />
+      
+      <Route path="/admin/products" element={
+        <RouteGuard>
+          <ProductManagementPage />
         </RouteGuard>
       } />
       

@@ -51,5 +51,11 @@ export const productService = {
   async getFeaturedProducts(): Promise<ProductList[]> {
     const response = await axios.get(`${API_URL}/featured`);
     return response.data;
+  },
+
+  // Eliminar productos demo
+  async clearDemoProducts(): Promise<{ message: string; deletedCount: number }> {
+    const response = await axios.delete(`${API_URL}/demo/clear`);
+    return response.data;
   }
 };

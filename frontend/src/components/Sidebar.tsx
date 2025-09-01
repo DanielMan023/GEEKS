@@ -40,7 +40,7 @@ const Sidebar = () => {
     { 
       icon: Folder, 
       label: 'Productos', 
-      to: '/dashboard/productos/lista', 
+      to: '/admin/products', 
       permission: 'canViewProducts',
       show: permissions.canViewProducts && isAdmin
     },
