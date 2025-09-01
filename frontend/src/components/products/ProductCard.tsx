@@ -48,7 +48,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = 'https://via.placeholder.com/400x400/6B7280/FFFFFF?text=Sin+Imagen';
+              target.src = 'https://picsum.photos/400/400?random=999';
             }}
           />
         ) : (

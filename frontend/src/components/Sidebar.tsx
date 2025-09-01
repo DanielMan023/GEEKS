@@ -8,7 +8,7 @@ import { useRole } from '../hooks/useRole';
 const Sidebar = () => {
   const { isCollapsed, toggleSidebar } = useSidebar();
   const { user, logout } = useAuth();
-  const { permissions, userRole } = useRole();
+  const { permissions, userRole, isAdmin } = useRole();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -28,35 +28,35 @@ const Sidebar = () => {
       label: 'Dashboard', 
       to: '/dashboard', 
       permission: 'canViewDashboard',
-      show: true // Siempre visible
+      show: isAdmin // Solo admin ve el dashboard
     },
     { 
       icon: Building, 
       label: 'Inventarios', 
       to: '/dashboard/inventarios/lista', 
       permission: 'canViewInventories',
-      show: permissions.canViewInventories
+      show: permissions.canViewInventories && isAdmin
     },
     { 
       icon: Folder, 
       label: 'Productos', 
       to: '/dashboard/productos/lista', 
       permission: 'canViewProducts',
-      show: permissions.canViewProducts
+      show: permissions.canViewProducts && isAdmin
     },
     { 
       icon: ClipboardList, 
       label: 'Pedidos', 
       to: '/dashboard/pedidos/lista', 
       permission: 'canViewOrders',
-      show: permissions.canViewOrders
+      show: permissions.canViewOrders && isAdmin
     },
     { 
       icon: CalendarCheck, 
       label: 'Compras', 
       to: '/dashboard/compras/lista', 
       permission: 'canViewPurchases',
-      show: permissions.canViewPurchases
+      show: permissions.canViewPurchases && isAdmin
     },
     { 
       icon: ShoppingBag, 

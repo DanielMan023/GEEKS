@@ -8,12 +8,13 @@ import Dashboard from './components/Dashboard';
 import ProductCatalogPage from './pages/ProductCatalogPage';
 import PublicRoute from './components/PublicRoute';
 import RouteGuard from './components/guards/RouteGuard';
+import RoleBasedRedirect from './components/RoleBasedRedirect';
 
 const AppContent: React.FC = () => {
   return (
     <Routes>
-      {/* Ruta raíz - redirigir según autenticación */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* Ruta raíz - redirigir según autenticación y rol */}
+      <Route path="/" element={<RoleBasedRedirect />} />
       
       {/* Rutas públicas - solo accesibles si NO estás autenticado */}
       <Route path="/login" element={
@@ -41,8 +42,8 @@ const AppContent: React.FC = () => {
         </RouteGuard>
       } />
       
-      {/* Ruta por defecto - redirigir a dashboard */}
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* Ruta por defecto - redirigir según rol */}
+      <Route path="*" element={<RoleBasedRedirect />} />
     </Routes>
   );
 };

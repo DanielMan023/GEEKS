@@ -12,12 +12,34 @@ axios.interceptors.request.use((config) => {
   return config;
 });
 
+// Interceptor de respuesta para manejar tokens expirados
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expirado o inválido - solo limpiar localStorage
+      // No redirigir automáticamente para evitar loops
+      console.log('Token expirado o inválido');
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const authService = {
   async login(credentials: LoginDTO): Promise<AuthResponse> {
     const response = await axios.post(`${API_URL}/login`, credentials);
+    console.log('authService: login - response.data:', response.data);
+    console.log('authService: login - response.data.data:', response.data.data);
+    console.log('authService: login - response.data.data?.token:', response.data.data?.token);
+    
     if (response.data.data?.token) {
+      console.log('authService: login - Guardando token y usuario en localStorage');
       localStorage.setItem('auth-token', response.data.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.data.user));
+      console.log('authService: login - Token guardado:', localStorage.getItem('auth-token') ? 'exitoso' : 'fallido');
+      console.log('authService: login - Usuario guardado:', localStorage.getItem('user') ? 'exitoso' : 'fallido');
+    } else {
+      console.log('authService: login - No se encontró token en la respuesta');
     }
     return response.data;
   },
@@ -43,12 +65,56 @@ export const authService = {
   },
 
   getCurrentUser() {
-    const userStr = localStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
+    try {
+      const userStr = localStorage.getItem('user');
+      const token = localStorage.getItem('auth-token');
+      
+      console.log('authService: getCurrentUser - userStr:', userStr);
+      console.log('authService: getCurrentUser - token:', token ? 'exists' : 'null');
+      
+      if (!userStr || !token) {
+        console.log('authService: getCurrentUser - No hay userStr o token');
+        return null;
+      }
+      
+      const user = JSON.parse(userStr);
+      console.log('authService: getCurrentUser - parsed user:', user);
+      
+      // Validar que el usuario tenga los campos básicos
+      if (!user || !user.id || !user.email) {
+        console.log('authService: getCurrentUser - Usuario inválido, faltan campos');
+        return null;
+      }
+      
+      console.log('authService: getCurrentUser - Usuario válido retornado');
+      return user;
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
+      return null;
+    }
   },
 
   isAuthenticated(): boolean {
     return !!localStorage.getItem('auth-token');
+  },
+
+  async validateToken(): Promise<boolean> {
+    try {
+      const token = localStorage.getItem('auth-token');
+      if (!token) return false;
+      
+      // Hacer una petición al servidor para validar el token
+      await axios.get(`${API_URL}/validate`);
+      return true;
+    } catch (error) {
+      console.error('Token validation failed:', error);
+      return false;
+    }
+  },
+
+  clearSession() {
+    localStorage.removeItem('auth-token');
+    localStorage.removeItem('user');
   }
 };
 

@@ -26,15 +26,42 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(() => {
+    // Inicializar el estado con el usuario del localStorage si existe
+    const savedUser = authService.getCurrentUser();
+    console.log('AuthContext: Usuario inicial:', savedUser);
+    return savedUser;
+  });
+  const [loading, setLoading] = useState(false);
 
+  // Verificar autenticación al cargar
   useEffect(() => {
-    const currentUser = authService.getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
-    }
-    setLoading(false);
+    const checkAuth = () => {
+      setLoading(true);
+      try {
+        const currentUser = authService.getCurrentUser();
+        const isAuth = authService.isAuthenticated();
+        
+        console.log('AuthContext: Verificando autenticación:', { currentUser, isAuth });
+        
+        if (currentUser && isAuth) {
+          setUser(currentUser);
+          console.log('AuthContext: Usuario autenticado:', currentUser);
+        } else {
+          console.log('AuthContext: No hay usuario válido, limpiando sesión');
+          setUser(null);
+          authService.clearSession();
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        setUser(null);
+        authService.clearSession();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
