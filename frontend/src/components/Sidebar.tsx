@@ -1,4 +1,4 @@
-import { LayoutDashboard, Building, Folder, ClipboardList, CalendarCheck, Users, Headphones, Sun, Settings, LayoutPanelLeft } from 'lucide-react';
+import { LayoutDashboard, Building, Folder, ClipboardList, CalendarCheck, Users, Headphones, Sun, Settings, LayoutPanelLeft, ShoppingBag } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { twMerge } from '../utils';
 import { useSidebar } from '../contexts/SidebarContext';
@@ -57,6 +57,13 @@ const Sidebar = () => {
       to: '/dashboard/compras/lista', 
       permission: 'canViewPurchases',
       show: permissions.canViewPurchases
+    },
+    { 
+      icon: ShoppingBag, 
+      label: 'Catálogo', 
+      to: '/catalog', 
+      permission: 'canViewCatalog',
+      show: true // Siempre visible para usuarios autenticados
     },
   ];
 

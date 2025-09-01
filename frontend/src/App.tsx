@@ -5,6 +5,7 @@ import { SidebarProvider } from './contexts/SidebarContext';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
+import ProductCatalogPage from './pages/ProductCatalogPage';
 import PublicRoute from './components/PublicRoute';
 import RouteGuard from './components/guards/RouteGuard';
 
@@ -31,6 +32,12 @@ const AppContent: React.FC = () => {
       <Route path="/dashboard/*" element={
         <RouteGuard>
           <Dashboard />
+        </RouteGuard>
+      } />
+      
+      <Route path="/catalog" element={
+        <RouteGuard>
+          <ProductCatalogPage />
         </RouteGuard>
       } />
       
