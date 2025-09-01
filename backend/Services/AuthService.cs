@@ -70,9 +70,15 @@ namespace GEEKS.Services
                 _context.Users.Add(newUser);
                 await _context.SaveChangesAsync();
 
+                // Generar token JWT para el nuevo usuario
+                var token = GenerateJwtToken(newUser);
+                
+                // Establecer cookie
+                SetAuthCookie(token);
+
                 response.Success = true;
                 response.Message = "Usuario registrado exitosamente";
-                response.Data = new { user = newUser };
+                response.Data = new { user = newUser, token = token };
                 return response;
             }
             catch (Exception ex)
@@ -157,7 +163,7 @@ namespace GEEKS.Services
                 _logger.LogInformation("🎉 Login exitoso para usuario: {UserId}", user.Id);
                 response.Success = true;
                 response.Message = "Login exitoso";
-                response.Data = new { user = user };
+                response.Data = new { user = user, token = token };
                 return response;
             }
             catch (Exception ex)
