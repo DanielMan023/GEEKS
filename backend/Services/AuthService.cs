@@ -187,7 +187,7 @@ namespace GEEKS.Services
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"] ?? string.Empty));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now.AddHours(8);
+            var expires = DateTime.Now.AddMinutes(30); // 30 minutos para desarrollo
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["JWT:Issuer"],
@@ -207,7 +207,7 @@ namespace GEEKS.Services
                 HttpOnly = true,
                 Secure = false, // Cambiado a false para desarrollo local
                 SameSite = SameSiteMode.Lax, // Cambiado a Lax para desarrollo
-                Expires = DateTime.Now.AddHours(8)
+                Expires = DateTime.Now.AddMinutes(30) // 30 minutos para desarrollo
             };
 
             _httpContextAccessor.HttpContext?.Response.Cookies.Append("auth-token", token, cookieOptions);

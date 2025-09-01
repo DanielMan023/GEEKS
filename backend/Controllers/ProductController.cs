@@ -418,6 +418,43 @@ namespace GEEKS.Controllers
             }
         }
 
+        // DELETE: api/Product/demo/clear
+        [HttpDelete("demo/clear")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> ClearDemoProducts()
+        {
+            try
+            {
+                // Eliminar productos que contengan "demo" en el nombre o que sean de categorías demo
+                var demoProducts = await _context.Products
+                    .Where(p => p.State == "Active" && 
+                               (p.Name.ToLower().Contains("demo") || 
+                                p.Name.ToLower().Contains("ejemplo") ||
+                                p.SKU.ToLower().Contains("demo")))
+                    .ToListAsync();
+
+                var deletedCount = demoProducts.Count;
+
+                foreach (var product in demoProducts)
+                {
+                    product.State = "Deleted";
+                    product.UpdatedAtDateTime = DateTime.UtcNow;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { 
+                    message = $"Se eliminaron {deletedCount} productos demo correctamente",
+                    deletedCount = deletedCount
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error eliminando productos demo");
+                return BadRequest(new { message = "Error interno del servidor" });
+            }
+        }
+
         // GET: api/Product/featured
         [HttpGet("featured")]
         [ProducesResponseType(StatusCodes.Status200OK)]

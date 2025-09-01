@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useRole } from '../hooks/useRole';
 import Sidebar from './Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
+import SessionTimer from './SessionTimer';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -26,6 +27,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar />
+      <SessionTimer />
       
       <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
         <div className="p-8">

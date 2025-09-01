@@ -115,6 +115,22 @@ export const authService = {
   clearSession() {
     localStorage.removeItem('auth-token');
     localStorage.removeItem('user');
+  },
+
+  isTokenExpired(token: string): boolean {
+    try {
+      // Decodificar el token JWT para obtener la fecha de expiración
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expirationTime = payload.exp * 1000; // Convertir a milisegundos
+      const currentTime = Date.now();
+      
+      // El token ha expirado si la hora actual es mayor que la hora de expiración
+      return currentTime >= expirationTime;
+    } catch (error) {
+      console.error('Error al verificar expiración del token:', error);
+      // Si hay error al decodificar, considerar el token como expirado por seguridad
+      return true;
+    }
   }
 };
 

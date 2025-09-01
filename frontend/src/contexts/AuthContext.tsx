@@ -45,6 +45,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('AuthContext: Verificando autenticación:', { currentUser, isAuth });
         
         if (currentUser && isAuth) {
+          // Verificar si el token ha expirado
+          const token = localStorage.getItem('auth-token');
+          if (token && authService.isTokenExpired(token)) {
+            console.log('AuthContext: Token expirado, cerrando sesión');
+            authService.clearSession();
+            setUser(null);
+            return;
+          }
+          
           setUser(currentUser);
           console.log('AuthContext: Usuario autenticado:', currentUser);
         } else {
@@ -62,6 +71,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     checkAuth();
+
+    // Configurar verificación periódica del token (cada 5 minutos)
+    const interval = setInterval(() => {
+      const token = localStorage.getItem('auth-token');
+      if (token && authService.isTokenExpired(token)) {
+        console.log('AuthContext: Token expirado en verificación periódica, cerrando sesión');
+        authService.clearSession();
+        setUser(null);
+      }
+    }, 5 * 60 * 1000); // 5 minutos
+
+    return () => clearInterval(interval);
   }, []);
 
   const login = async (email: string, password: string) => {
