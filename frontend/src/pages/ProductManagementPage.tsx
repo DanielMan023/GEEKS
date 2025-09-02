@@ -7,6 +7,9 @@ import { ProductList, CreateProduct, UpdateProduct } from '../types/product';
 import { productService } from '../services/productService';
 import SessionTimer from '../components/SessionTimer';
 import CreateProductForm from '../components/products/CreateProductForm';
+import ImageUpload from '../components/common/ImageUpload';
+import { fileService } from '../services/fileService';
+import PlaceholderImage from '../components/common/PlaceholderImage';
 
 const ProductManagementPage: React.FC = () => {
   const { isCollapsed } = useSidebar();
@@ -17,7 +20,7 @@ const ProductManagementPage: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showClearDemoModal, setShowClearDemoModal] = useState(false);
+
   const [selectedProduct, setSelectedProduct] = useState<ProductList | null>(null);
   const [editingProduct, setEditingProduct] = useState<UpdateProduct | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -83,17 +86,7 @@ const ProductManagementPage: React.FC = () => {
     }
   };
 
-  const handleClearDemoProducts = async () => {
-    try {
-      const result = await productService.clearDemoProducts();
-      setShowClearDemoModal(false);
-      loadProducts();
-      alert(`Se eliminaron ${result.deletedCount} productos demo correctamente`);
-    } catch (error) {
-      console.error('Error clearing demo products:', error);
-      alert('Error al eliminar productos demo');
-    }
-  };
+
 
   const openEditModal = (product: ProductList) => {
     setSelectedProduct(product);
@@ -150,22 +143,15 @@ const ProductManagementPage: React.FC = () => {
               <h1 className="text-2xl font-bold text-gray-900">Gestión de Productos</h1>
               <p className="text-gray-600">Administra el catálogo de productos</p>
             </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowClearDemoModal(true)}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-              >
-                <Trash2 size={20} />
-                Eliminar Demo
-              </button>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-              >
-                <Plus size={20} />
-                Nuevo Producto
-              </button>
-            </div>
+                         <div className="flex gap-3">
+               <button
+                 onClick={() => setShowCreateModal(true)}
+                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+               >
+                 <Plus size={20} />
+                 Nuevo Producto
+               </button>
+             </div>
           </div>
 
           {/* Search and Filters */}
@@ -231,15 +217,31 @@ const ProductManagementPage: React.FC = () => {
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
                                 <div className="h-12 w-12 flex-shrink-0">
-                                  <img
-                                    className="h-12 w-12 rounded-lg object-cover"
-                                    src={product.mainImage || 'https://picsum.photos/400/400?random=999'}
-                                    alt={product.name}
-                                    onError={(e) => {
-                                      const target = e.target as HTMLImageElement;
-                                      target.src = 'https://picsum.photos/400/400?random=999';
-                                    }}
-                                  />
+                                                                     {product.mainImage ? (
+                                     <img
+                                       className="h-12 w-12 rounded-lg object-cover"
+                                       src={fileService.getImageUrl(product.mainImage)}
+                                       alt={product.name}
+                                       onError={(e) => {
+                                         const target = e.target as HTMLImageElement;
+                                         target.style.display = 'none';
+                                         target.nextElementSibling?.classList.remove('hidden');
+                                       }}
+                                     />
+                                   ) : (
+                                     <PlaceholderImage 
+                                       width={48} 
+                                       height={48} 
+                                       text="No Image" 
+                                       className="h-12 w-12 rounded-lg"
+                                     />
+                                   )}
+                                   <PlaceholderImage 
+                                     width={48} 
+                                       height={48} 
+                                       text="No Image" 
+                                       className="h-12 w-12 rounded-lg hidden"
+                                     />
                                 </div>
                                 <div className="ml-4">
                                   <div className="text-sm font-medium text-gray-900">{product.name}</div>
@@ -410,13 +412,7 @@ const ProductManagementPage: React.FC = () => {
         />
       )}
 
-      {/* Clear Demo Products Modal */}
-      {showClearDemoModal && (
-        <ClearDemoModal
-          onClose={() => setShowClearDemoModal(false)}
-          onConfirm={handleClearDemoProducts}
-        />
-      )}
+      
     </div>
   );
 };
@@ -532,17 +528,11 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              URL de Imagen Principal
-            </label>
-            <input
-              type="url"
-              value={formData.mainImage}
-              onChange={(e) => setFormData({ ...formData, mainImage: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
-          </div>
+                     <ImageUpload
+             onImageUploaded={(imageUrl) => setFormData({ ...formData, mainImage: imageUrl })}
+             currentImage={formData.mainImage}
+             className="col-span-2"
+           />
 
           <div className="flex items-center">
             <input
@@ -622,47 +612,6 @@ const DeleteProductModal: React.FC<DeleteProductModalProps> = ({ product, onClos
   );
 };
 
-interface ClearDemoModalProps {
-  onClose: () => void;
-  onConfirm: () => void;
-}
 
-const ClearDemoModal: React.FC<ClearDemoModalProps> = ({ onClose, onConfirm }) => {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <div className="flex items-center mb-4">
-          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-            <Trash2 className="h-6 w-6 text-red-600" />
-          </div>
-        </div>
-        
-        <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Eliminar Productos Demo
-          </h3>
-          <p className="text-sm text-gray-500 mb-6">
-            ¿Estás seguro de que quieres eliminar todos los productos demo? Esta acción eliminará todos los productos que contengan "demo" o "ejemplo" en su nombre o SKU. Esta acción no se puede deshacer.
-          </p>
-        </div>
-
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-          >
-            Eliminar Demo
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default ProductManagementPage;

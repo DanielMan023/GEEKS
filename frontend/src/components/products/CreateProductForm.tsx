@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CreateProduct } from '../../types/product';
+import ImageUpload from '../common/ImageUpload';
 
 interface CreateProductFormProps {
   onSubmit: (product: CreateProduct) => void;
@@ -188,17 +189,10 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              URL de Imagen Principal
-            </label>
-            <input
-              type="url"
-              value={formData.mainImage}
-              onChange={(e) => setFormData({ ...formData, mainImage: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
-          </div>
+          <ImageUpload
+            onImageUploaded={(imageUrl) => setFormData({ ...formData, mainImage: imageUrl })}
+            className="col-span-2"
+          />
 
           <div className="grid grid-cols-4 gap-4">
             <div>
