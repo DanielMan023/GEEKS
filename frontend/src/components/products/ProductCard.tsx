@@ -1,5 +1,7 @@
 import React from 'react';
 import { ProductList } from '../../types/product';
+import { fileService } from '../../services/fileService';
+import PlaceholderImage from '../common/PlaceholderImage';
 
 interface ProductCardProps {
   product: ProductList;
@@ -41,21 +43,31 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     >
       {/* Imagen del producto */}
       <div className="relative h-48 bg-gray-100 overflow-hidden">
-        {product.mainImage ? (
-          <img
-            src={product.mainImage}
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = 'https://picsum.photos/400/400?random=999';
-            }}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200">
-            <span className="text-gray-400 text-sm">Sin imagen</span>
-          </div>
-        )}
+                          {product.mainImage ? (
+           <img
+             src={fileService.getImageUrl(product.mainImage)}
+             alt={product.name}
+             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+             onError={(e) => {
+               const target = e.target as HTMLImageElement;
+               target.style.display = 'none';
+               target.nextElementSibling?.classList.remove('hidden');
+             }}
+           />
+         ) : (
+           <PlaceholderImage 
+             width={400} 
+             height={400} 
+             text="Sin imagen" 
+             className="w-full h-full"
+           />
+         )}
+         <PlaceholderImage 
+           width={400} 
+           height={400} 
+           text="Sin imagen" 
+           className="w-full h-full hidden"
+         />
         
         {/* Badge de destacado */}
         {product.isFeatured && (
