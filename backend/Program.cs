@@ -66,6 +66,7 @@ builder.Services.AddScoped<DatabaseSeeder>();
 
 // SERVICIOS DE IA Y CHATBOT
 builder.Services.AddScoped<IChatbotService, ChatbotService>();
+builder.Services.AddHttpClient<IOpenAIService, OpenAIService>();
 
 // Contexto de base de datos
 var connectionString = builder.Configuration.GetConnectionString("PostgreSQLConnection");

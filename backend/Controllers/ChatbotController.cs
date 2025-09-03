@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using GEEKS.Dto;
 using GEEKS.Interfaces;
+using GEEKS.Services;
 using Microsoft.AspNetCore.Authorization;
 
 namespace GEEKS.Controllers
@@ -128,9 +129,136 @@ namespace GEEKS.Controllers
                     "Product Recommendations", 
                     "Context Awareness",
                     "Quick Replies",
-                    "Natural Language Processing"
+                    "Natural Language Processing",
+                    "ChatGPT Integration"
                 }
             });
+        }
+
+        [HttpPost("test-ai")]
+        [AllowAnonymous] // Endpoint público para probar IA
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<object>> TestAI([FromBody] ChatbotMessageDTO message)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(message.Message))
+                {
+                    return BadRequest(new { message = "El mensaje es requerido" });
+                }
+
+                // Probar directamente el servicio de IA
+                var aiResponse = await _chatbotService.ProcessMessageAsync(message);
+                
+                return Ok(new
+                {
+                    originalMessage = message.Message,
+                    aiResponse = aiResponse.Message,
+                    intent = aiResponse.Intent,
+                    confidence = aiResponse.Confidence,
+                    timestamp = DateTime.UtcNow,
+                    aiWorking = true,
+                    message = "ChatGPT está funcionando correctamente"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error probando IA");
+                return StatusCode(500, new { 
+                    message = "Error probando IA", 
+                    error = ex.Message,
+                    aiWorking = false,
+                    details = "ChatGPT no está funcionando"
+                });
+            }
+        }
+
+        [HttpPost("test-openai-direct")]
+        [AllowAnonymous] // Endpoint público para probar OpenAI directamente
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<object>> TestOpenAIDirect([FromBody] ChatbotMessageDTO message)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(message.Message))
+                {
+                    return BadRequest(new { message = "El mensaje es requerido" });
+                }
+
+                // Obtener el servicio de OpenAI directamente
+                var openAIService = HttpContext.RequestServices.GetRequiredService<IOpenAIService>();
+                
+                // Probar directamente con OpenAI
+                var aiResponse = await openAIService.GetChatResponseAsync(message.Message, "Test directo");
+                
+                return Ok(new
+                {
+                    originalMessage = message.Message,
+                    aiResponse = aiResponse,
+                    timestamp = DateTime.UtcNow,
+                    aiWorking = true,
+                    message = "ChatGPT está funcionando correctamente",
+                    testType = "Direct OpenAI API call"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error probando OpenAI directamente");
+                return StatusCode(500, new { 
+                    message = "Error probando OpenAI directamente", 
+                    error = ex.Message,
+                    aiWorking = false,
+                    details = "ChatGPT no está funcionando",
+                    stackTrace = ex.StackTrace
+                });
+            }
+        }
+
+        [HttpGet("diagnose-openai")]
+        [AllowAnonymous] // Endpoint público para diagnosticar OpenAI
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<object> DiagnoseOpenAI()
+        {
+            try
+            {
+                var configuration = HttpContext.RequestServices.GetRequiredService<IConfiguration>();
+                
+                var apiKey = configuration["OpenAI:ApiKey"];
+                var model = configuration["OpenAI:Model"];
+                var maxTokens = configuration["OpenAI:MaxTokens"];
+                var temperature = configuration["OpenAI:Temperature"];
+                
+                var hasApiKey = !string.IsNullOrEmpty(apiKey);
+                var apiKeyLength = hasApiKey ? apiKey.Length : 0;
+                var apiKeyStart = hasApiKey ? apiKey.Substring(0, Math.Min(10, apiKey.Length)) : "";
+                var apiKeyEnd = hasApiKey ? apiKey.Substring(Math.Max(0, apiKey.Length - 10)) : "";
+                
+                return Ok(new
+                {
+                    timestamp = DateTime.UtcNow,
+                    openAIConfig = new
+                    {
+                        hasApiKey = hasApiKey,
+                        apiKeyLength = apiKeyLength,
+                        apiKeyStart = apiKeyStart,
+                        apiKeyEnd = apiKeyEnd,
+                        model = model,
+                        maxTokens = maxTokens,
+                        temperature = temperature
+                    },
+                    message = "Diagnóstico de configuración de OpenAI"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error diagnosticando OpenAI");
+                return StatusCode(500, new { 
+                    message = "Error diagnosticando OpenAI", 
+                    error = ex.Message
+                });
+            }
         }
 
         private int? GetCurrentUserId()

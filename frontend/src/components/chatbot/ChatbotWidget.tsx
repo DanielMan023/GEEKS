@@ -30,18 +30,18 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ className = '' }) => {
   }, [messages]);
 
   const addWelcomeMessage = () => {
-    const welcomeMessage: ChatMessage = {
-      id: 'welcome',
-      text: '¡Hola! Soy tu asistente virtual de GEEKS. ¿En qué puedo ayudarte hoy?',
-      isUser: false,
-      timestamp: new Date(),
-      type: 'text',
-      quickReplies: [
-        { text: '🔍 Buscar productos', action: 'search_products' },
-        { text: '📂 Ver categorías', action: 'view_categories' },
-        { text: '❓ Necesito ayuda', action: 'help' }
-      ]
-    };
+          const welcomeMessage: ChatMessage = {
+        id: 'welcome',
+        text: '¡Hola! Soy tu asistente virtual de GEEKS con IA avanzada. ¿En qué puedo ayudarte hoy? 🤖✨',
+        isUser: false,
+        timestamp: new Date(),
+        type: 'text',
+        quickReplies: [
+          { text: '🔍 Buscar productos', action: 'search_products' },
+          { text: '📂 Ver categorías', action: 'view_categories' },
+          { text: '❓ Necesito ayuda', action: 'help' }
+        ]
+      };
     setMessages([welcomeMessage]);
   };
 
@@ -132,24 +132,33 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ className = '' }) => {
     <div className={`fixed bottom-4 right-4 z-50 ${className}`}>
       {/* Botón flotante del chatbot */}
       {!isOpen && (
-        <button
-          onClick={toggleChat}
-          className="bg-green-600 hover:bg-green-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
-          title="Abrir chat con asistente virtual"
-        >
-          <MessageCircle size={24} />
-        </button>
+                  <button
+            onClick={toggleChat}
+            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+            title="Abrir chat con asistente virtual con IA"
+          >
+            <div className="relative">
+              <MessageCircle size={24} />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+            </div>
+          </button>
       )}
 
       {/* Ventana del chat */}
       {isOpen && (
         <div className="bg-white rounded-lg shadow-2xl w-96 h-[500px] flex flex-col border border-gray-200">
           {/* Header */}
-          <div className="bg-green-600 text-white p-4 rounded-t-lg flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bot size={20} />
-              <span className="font-semibold">Asistente Virtual GEEKS</span>
-            </div>
+                      <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-4 rounded-t-lg flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Bot size={20} />
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                </div>
+                <div>
+                  <div className="font-semibold">Asistente IA GEEKS</div>
+                  <div className="text-xs opacity-90">Powered by ChatGPT</div>
+                </div>
+              </div>
             <button
               onClick={toggleChat}
               className="text-white hover:text-gray-200 transition-colors"

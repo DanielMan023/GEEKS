@@ -10,11 +10,13 @@ namespace GEEKS.Services
     {
         private readonly DBContext _context;
         private readonly ILogger<ChatbotService> _logger;
+        private readonly IOpenAIService _openAIService;
 
-        public ChatbotService(DBContext context, ILogger<ChatbotService> logger)
+        public ChatbotService(DBContext context, ILogger<ChatbotService> logger, IOpenAIService openAIService)
         {
             _context = context;
             _logger = logger;
+            _openAIService = openAIService;
         }
 
         public async Task<ChatbotResponseDTO> ProcessMessageAsync(ChatbotMessageDTO message)
@@ -27,8 +29,8 @@ namespace GEEKS.Services
                 var intent = DetectIntent(userMessage);
                 var confidence = CalculateConfidence(userMessage, intent);
                 
-                // Generar respuesta basada en la intención
-                var response = await GenerateResponseAsync(intent, userMessage, message.UserId);
+                // Generar respuesta con ChatGPT
+                var response = await GenerateResponseWithAIAsync(intent, userMessage, message.UserId);
                 
                 // Agregar respuestas rápidas contextuales
                 response.QuickReplies = GenerateQuickReplies(intent);
@@ -99,11 +101,8 @@ namespace GEEKS.Services
 
         public async Task<string> GenerateProductDescriptionAsync(string productName, string category)
         {
-            // Por ahora retornamos una descripción generada
-            // En el futuro podrías integrar con OpenAI API para generar descripciones más creativas
-            return $"Descubre {productName}, un producto excepcional en la categoría de {category}. " +
-                   "Diseñado con la más alta calidad y pensado en tu satisfacción. " +
-                   "¡No te pierdas esta increíble oportunidad!";
+            // Usar el servicio de IA para generar descripciones
+            return await _openAIService.GenerateProductDescriptionAsync(productName, category);
         }
 
         public async Task<ChatbotContextDTO> GetChatbotContextAsync(int? userId = null)
@@ -193,6 +192,29 @@ namespace GEEKS.Services
             }
             
             return totalKeywords > 0 ? (double)keywordMatches / totalKeywords : 0.5;
+        }
+
+        private async Task<ChatbotResponseDTO> GenerateResponseWithAIAsync(string intent, string message, int? userId)
+        {
+            try
+            {
+                // Construir contexto para ChatGPT
+                var context = await BuildContextForAI(userId);
+                
+                // Generar prompt basado en la intención
+                var prompt = BuildPromptForIntent(intent, message, context);
+                
+                // Obtener respuesta de ChatGPT
+                var aiResponse = await _openAIService.GetChatResponseAsync(prompt, context);
+                
+                // Procesar la respuesta según el tipo de intención
+                return await ProcessAIResponse(intent, aiResponse, message, userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error usando IA, fallback a respuestas básicas");
+                return await GenerateResponseAsync(intent, message, userId);
+            }
         }
 
         private async Task<ChatbotResponseDTO> GenerateResponseAsync(string intent, string message, int? userId)
@@ -342,6 +364,87 @@ namespace GEEKS.Services
             {
                 Message = "Entiendo tu consulta. ¿Te gustaría que busque productos específicos o prefieres que te ayude con algo más concreto? " +
                          "Puedo ayudarte a buscar productos, explorar categorías o resolver dudas sobre el proceso de compra.",
+                Type = "text"
+            };
+        }
+
+        private async Task<string> BuildContextForAI(int? userId)
+        {
+            var context = new List<string>();
+            
+            // Información del usuario
+            if (userId.HasValue)
+            {
+                var user = await _context.Users.FindAsync(userId.Value);
+                if (user != null)
+                {
+                    context.Add($"Usuario: {user.FirstName} {user.LastName}");
+                    context.Add($"Rol: {user.Role?.Name ?? "Usuario"}");
+                }
+            }
+            
+            // Categorías disponibles
+            var categories = await _context.Categories
+                .Where(c => c.State == "Active")
+                .Select(c => c.Name)
+                .ToListAsync();
+            context.Add($"Categorías disponibles: {string.Join(", ", categories)}");
+            
+            // Productos populares
+            var popularProducts = await _context.Products
+                .Where(p => p.State == "Active")
+                .OrderByDescending(p => p.CreatedAtDateTime)
+                .Take(5)
+                .Select(p => p.Name)
+                .ToListAsync();
+            context.Add($"Productos populares: {string.Join(", ", popularProducts)}");
+            
+            return string.Join(" | ", context);
+        }
+
+        private string BuildPromptForIntent(string intent, string message, string context)
+        {
+            return intent switch
+            {
+                "greeting" => $"El usuario está saludando. Responde de forma amigable y muéstrale las opciones disponibles. Mensaje: {message}",
+                
+                "product_search" => $"El usuario está buscando productos. Ayúdalo a encontrar lo que necesita y sugiere opciones relevantes. Búsqueda: {message}",
+                
+                "help" => $"El usuario necesita ayuda. Explícale claramente cómo puedes ayudarlo y qué opciones tiene disponibles.",
+                
+                "category_inquiry" => $"El usuario quiere saber sobre categorías. Muéstrale las categorías disponibles y ayúdalo a elegir.",
+                
+                "gratitude" => $"El usuario está agradeciendo. Responde de forma cálida y ofrécete a seguir ayudando.",
+                
+                "farewell" => $"El usuario se está despidiendo. Despídete de forma amigable y anímalo a volver.",
+                
+                _ => $"El usuario dijo: '{message}'. Responde de forma útil y natural, ayudándolo con lo que necesite."
+            };
+        }
+
+        private async Task<ChatbotResponseDTO> ProcessAIResponse(string intent, string aiResponse, string message, int? userId)
+        {
+            // Si es búsqueda de productos, combinar IA con búsqueda real
+            if (intent == "product_search")
+            {
+                var searchTerms = ExtractSearchTerms(message);
+                var recommendations = await GetProductRecommendationsAsync(searchTerms, userId);
+                
+                if (recommendations.Any())
+                {
+                    return new ChatbotResponseDTO
+                    {
+                        Message = aiResponse,
+                        Type = "product_list",
+                        ProductSuggestions = recommendations.Take(3).ToList()
+                    };
+                }
+            }
+            
+            // Para otras intenciones, usar solo la respuesta de IA
+            return new ChatbotResponseDTO
+            {
+                Message = aiResponse,
                 Type = "text"
             };
         }
