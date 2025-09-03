@@ -28,6 +28,11 @@
 - **Sistema de recomendaciones inteligente** de productos
 - **Conciencia contextual** y memoria de sesión
 - **Integración nativa** con el catálogo de productos
+- **IA Real**: Integrado con Google Cloud + Gemini Pro
+- **Fallback Inteligente**: Respuestas de respaldo si la IA falla
+
+### **Configuración de IA:**
+Ver `backend/SETUP.md` para instrucciones de configuración de API Keys y credenciales.
 
 ### 📁 **Frontend (Estructura Preparada)**
 - Estructura organizada para React/TypeScript
