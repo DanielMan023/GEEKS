@@ -217,65 +217,24 @@ namespace GEEKS.Services
             }
         }
 
+        // Método simplificado - solo para casos específicos que requieren lógica de negocio
         private async Task<ChatbotResponseDTO> GenerateResponseAsync(string intent, string message, int? userId)
         {
-            switch (intent)
+            // Solo manejar búsqueda de productos (requiere lógica de base de datos)
+            if (intent == "product_search")
             {
-                case "greeting":
-                    return await GenerateGreetingResponseAsync(userId);
-                    
-                case "product_search":
-                    return await GenerateProductSearchResponseAsync(message);
-                    
-                case "help":
-                    return GenerateHelpResponse();
-                    
-                case "category_inquiry":
-                    return await GenerateCategoryResponseAsync();
-                    
-                case "gratitude":
-                    return new ChatbotResponseDTO
-                    {
-                        Message = "¡De nada! Estoy aquí para ayudarte. ¿Hay algo más en lo que pueda asistirte?",
-                        Type = "text"
-                    };
-                    
-                case "farewell":
-                    return new ChatbotResponseDTO
-                    {
-                        Message = "¡Hasta luego! Ha sido un placer ayudarte. ¡Vuelve pronto!",
-                        Type = "text"
-                    };
-                    
-                default:
-                    return await GenerateGeneralResponseAsync(message);
+                return await GenerateProductSearchResponseAsync(message);
             }
-        }
-
-        private async Task<ChatbotResponseDTO> GenerateGreetingResponseAsync(int? userId)
-        {
-            var timeOfDay = DateTime.Now.Hour;
-            string greeting;
             
-            if (timeOfDay < 12)
-                greeting = "¡Buenos días!";
-            else if (timeOfDay < 18)
-                greeting = "¡Buenas tardes!";
-            else
-                greeting = "¡Buenas noches!";
-            
-            var context = await GetChatbotContextAsync(userId);
-            var popularCategories = string.Join(", ", context.PopularCategories.Take(3));
-            
+            // Para todo lo demás, usar fallback inteligente del GeminiService
             return new ChatbotResponseDTO
             {
-                Message = $"{greeting} Soy tu asistente virtual de GEEKS. " +
-                         "Puedo ayudarte a encontrar productos, explorar categorías o resolver cualquier duda. " +
-                         $"Algunas categorías populares son: {popularCategories}. " +
-                         "¿En qué puedo ayudarte hoy?",
+                Message = "Lo siento, estoy teniendo problemas técnicos. ¿Puedes intentar de nuevo mas tarde?",
                 Type = "text"
             };
         }
+
+
 
         private async Task<ChatbotResponseDTO> GenerateProductSearchResponseAsync(string message)
         {
@@ -314,59 +273,11 @@ namespace GEEKS.Services
             }
         }
 
-        private ChatbotResponseDTO GenerateHelpResponse()
-        {
-            return new ChatbotResponseDTO
-            {
-                Message = "¡Por supuesto! Te explico lo que puedo hacer:\n\n" +
-                         "🔍 **Buscar productos**: Dime qué buscas y te ayudo a encontrarlo\n" +
-                         "📂 **Explorar categorías**: Te muestro las categorías disponibles\n" +
-                         "💰 **Información de precios**: Te doy detalles sobre precios y descuentos\n" +
-                         "❓ **Ayuda general**: Resuelvo dudas sobre el proceso de compra\n\n" +
-                         "¿Qué te gustaría hacer?",
-                Type = "text"
-            };
-        }
 
-        private async Task<ChatbotResponseDTO> GenerateCategoryResponseAsync()
-        {
-            var categories = await _context.Categories
-                .Where(c => c.State == "Active")
-                .Select(c => c.Name)
-                .ToListAsync();
-            
-            var categoryList = string.Join(", ", categories);
-            
-            return new ChatbotResponseDTO
-            {
-                Message = $"Tenemos las siguientes categorías disponibles:\n\n{categoryList}\n\n" +
-                         "¿Te interesa alguna categoría en particular? Puedo mostrarte los productos destacados de cada una.",
-                Type = "text"
-            };
-        }
 
-        private async Task<ChatbotResponseDTO> GenerateGeneralResponseAsync(string message)
-        {
-            // Intentar buscar productos relacionados
-            var recommendations = await GetProductRecommendationsAsync(message);
-            
-            if (recommendations.Any())
-            {
-                return new ChatbotResponseDTO
-                {
-                    Message = $"Creo que podrías estar interesado en estos productos relacionados con tu consulta:",
-                    Type = "product_list",
-                    ProductSuggestions = recommendations
-                };
-            }
-            
-            return new ChatbotResponseDTO
-            {
-                Message = "Entiendo tu consulta. ¿Te gustaría que busque productos específicos o prefieres que te ayude con algo más concreto? " +
-                         "Puedo ayudarte a buscar productos, explorar categorías o resolver dudas sobre el proceso de compra.",
-                Type = "text"
-            };
-        }
+
+
+
 
         private async Task<string> BuildContextForAI(int? userId)
         {
