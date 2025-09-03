@@ -5,6 +5,7 @@ import { useRole } from '../hooks/useRole';
 import Sidebar from './Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
 import SessionTimer from './SessionTimer';
+import ChatbotDemo from './chatbot/ChatbotDemo';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -92,6 +93,11 @@ const Dashboard: React.FC = () => {
                   Como administrador, tienes acceso completo a todas las funcionalidades del sistema.
                   Utiliza el menú lateral para navegar por las diferentes secciones administrativas.
                 </p>
+              </div>
+
+              {/* Demostración del Chatbot */}
+              <div className="mt-8">
+                <ChatbotDemo />
               </div>
             </div>
           </div>

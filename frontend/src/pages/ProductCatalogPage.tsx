@@ -3,6 +3,7 @@ import { ProductCatalog } from '../components/products/ProductCatalog';
 import { ProductList } from '../types/product';
 import Sidebar from '../components/Sidebar';
 import { useSidebar } from '../contexts/SidebarContext';
+import ChatbotWidget from '../components/chatbot/ChatbotWidget';
 
 const ProductCatalogPage: React.FC = () => {
   const { isCollapsed } = useSidebar();
@@ -23,6 +24,7 @@ const ProductCatalogPage: React.FC = () => {
       <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
         <ProductCatalog onProductClick={handleProductClick} />
       </div>
+      <ChatbotWidget />
     </div>
   );
 };

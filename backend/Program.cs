@@ -64,6 +64,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<DatabaseSeeder>();
 
+// SERVICIOS DE IA Y CHATBOT
+builder.Services.AddScoped<IChatbotService, ChatbotService>();
+
 // Contexto de base de datos
 var connectionString = builder.Configuration.GetConnectionString("PostgreSQLConnection");
 builder.Services.AddDbContext<DBContext>(options =>

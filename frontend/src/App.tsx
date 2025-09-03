@@ -10,6 +10,7 @@ import ProductManagementPage from './pages/ProductManagementPage';
 import PublicRoute from './components/PublicRoute';
 import RouteGuard from './components/guards/RouteGuard';
 import RoleBasedRedirect from './components/RoleBasedRedirect';
+import ChatbotWidget from './components/chatbot/ChatbotWidget';
 
 const AppContent: React.FC = () => {
   return (
@@ -60,6 +61,7 @@ const App: React.FC = () => {
     <AuthProvider>
       <SidebarProvider>
         <AppContent />
+        <ChatbotWidget />
       </SidebarProvider>
     </AuthProvider>
   );
