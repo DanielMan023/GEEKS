@@ -9,22 +9,22 @@ using GEEKS.Interfaces;
 
 namespace GEEKS.Services
 {
-    public interface IOpenAIService
+    public interface IGeminiService
     {
         Task<string> GetChatResponseAsync(string userMessage, string context);
         Task<string> GenerateProductDescriptionAsync(string productName, string category);
     }
 
-    public class OpenAIService : IOpenAIService
+    public class GeminiService : IGeminiService
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
-        private readonly ILogger<OpenAIService> _logger;
+        private readonly ILogger<GeminiService> _logger;
         private readonly string _projectId;
         private readonly string _location;
         private readonly string _modelId;
 
-        public OpenAIService(IConfiguration configuration, ILogger<OpenAIService> logger, HttpClient httpClient)
+        public GeminiService(IConfiguration configuration, ILogger<GeminiService> logger, HttpClient httpClient)
         {
             _configuration = configuration;
             _logger = logger;

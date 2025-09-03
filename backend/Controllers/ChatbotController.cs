@@ -187,11 +187,11 @@ namespace GEEKS.Controllers
                     return BadRequest(new { message = "El mensaje es requerido" });
                 }
 
-                // Obtener el servicio de OpenAI directamente
-                var openAIService = HttpContext.RequestServices.GetRequiredService<IOpenAIService>();
+                // Obtener el servicio de Gemini directamente
+                var geminiService = HttpContext.RequestServices.GetRequiredService<IGeminiService>();
                 
-                // Probar directamente con OpenAI
-                var aiResponse = await openAIService.GetChatResponseAsync(message.Message, "Test directo");
+                // Probar directamente con Gemini Pro
+                var aiResponse = await geminiService.GetChatResponseAsync(message.Message, "Test directo");
                 
                 return Ok(new
                 {

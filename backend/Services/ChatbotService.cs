@@ -10,13 +10,13 @@ namespace GEEKS.Services
     {
         private readonly DBContext _context;
         private readonly ILogger<ChatbotService> _logger;
-        private readonly IOpenAIService _openAIService;
+        private readonly IGeminiService _geminiService;
 
-        public ChatbotService(DBContext context, ILogger<ChatbotService> logger, IOpenAIService openAIService)
+        public ChatbotService(DBContext context, ILogger<ChatbotService> logger, IGeminiService geminiService)
         {
             _context = context;
             _logger = logger;
-            _openAIService = openAIService;
+            _geminiService = geminiService;
         }
 
         public async Task<ChatbotResponseDTO> ProcessMessageAsync(ChatbotMessageDTO message)
@@ -29,7 +29,7 @@ namespace GEEKS.Services
                 var intent = DetectIntent(userMessage);
                 var confidence = CalculateConfidence(userMessage, intent);
                 
-                // Generar respuesta con ChatGPT
+                // Generar respuesta con Gemini Pro
                 var response = await GenerateResponseWithAIAsync(intent, userMessage, message.UserId);
                 
                 // Agregar respuestas rápidas contextuales
@@ -102,7 +102,7 @@ namespace GEEKS.Services
         public async Task<string> GenerateProductDescriptionAsync(string productName, string category)
         {
             // Usar el servicio de IA para generar descripciones
-            return await _openAIService.GenerateProductDescriptionAsync(productName, category);
+            return await _geminiService.GenerateProductDescriptionAsync(productName, category);
         }
 
         public async Task<ChatbotContextDTO> GetChatbotContextAsync(int? userId = null)
@@ -198,14 +198,14 @@ namespace GEEKS.Services
         {
             try
             {
-                // Construir contexto para ChatGPT
+                // Construir contexto para Gemini Pro
                 var context = await BuildContextForAI(userId);
                 
                 // Generar prompt basado en la intención
                 var prompt = BuildPromptForIntent(intent, message, context);
                 
-                // Obtener respuesta de ChatGPT
-                var aiResponse = await _openAIService.GetChatResponseAsync(prompt, context);
+                // Obtener respuesta de Gemini Pro
+                var aiResponse = await _geminiService.GetChatResponseAsync(prompt, context);
                 
                 // Procesar la respuesta según el tipo de intención
                 return await ProcessAIResponse(intent, aiResponse, message, userId);

@@ -156,7 +156,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ className = '' }) => {
                 </div>
                 <div>
                   <div className="font-semibold">Asistente IA GEEKS</div>
-                  <div className="text-xs opacity-90">Powered by ChatGPT</div>
+                  <div className="text-xs opacity-90">Powered by Gemini Pro</div>
                 </div>
               </div>
             <button
