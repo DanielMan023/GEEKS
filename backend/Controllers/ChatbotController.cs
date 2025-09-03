@@ -130,7 +130,7 @@ namespace GEEKS.Controllers
                     "Context Awareness",
                     "Quick Replies",
                     "Natural Language Processing",
-                    "ChatGPT Integration"
+                    "Gemini Pro Integration"
                 }
             });
         }
@@ -159,7 +159,7 @@ namespace GEEKS.Controllers
                     confidence = aiResponse.Confidence,
                     timestamp = DateTime.UtcNow,
                     aiWorking = true,
-                    message = "ChatGPT está funcionando correctamente"
+                    message = "Gemini Pro está funcionando correctamente"
                 });
             }
             catch (Exception ex)
@@ -169,7 +169,7 @@ namespace GEEKS.Controllers
                     message = "Error probando IA", 
                     error = ex.Message,
                     aiWorking = false,
-                    details = "ChatGPT no está funcionando"
+                    details = "Gemini Pro no está funcionando"
                 });
             }
         }
@@ -199,8 +199,8 @@ namespace GEEKS.Controllers
                     aiResponse = aiResponse,
                     timestamp = DateTime.UtcNow,
                     aiWorking = true,
-                    message = "ChatGPT está funcionando correctamente",
-                    testType = "Direct OpenAI API call"
+                    message = "Gemini Pro está funcionando correctamente",
+                    testType = "Direct Google Cloud API call"
                 });
             }
             catch (Exception ex)
@@ -210,7 +210,7 @@ namespace GEEKS.Controllers
                     message = "Error probando OpenAI directamente", 
                     error = ex.Message,
                     aiWorking = false,
-                    details = "ChatGPT no está funcionando",
+                    details = "Gemini Pro no está funcionando",
                     stackTrace = ex.StackTrace
                 });
             }
