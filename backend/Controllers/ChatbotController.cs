@@ -261,6 +261,80 @@ namespace GEEKS.Controllers
             }
         }
 
+
+
+        [HttpGet("test-gemini-direct")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<object>> TestGeminiDirect([FromQuery] string message)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(message))
+                {
+                    return BadRequest(new { message = "El mensaje es requerido" });
+                }
+
+                _logger.LogInformation("=== TEST GEMINI DIRECT INICIADO ===");
+                _logger.LogInformation("Mensaje recibido: {Message}", message);
+
+                // Obtener el servicio de Gemini directamente
+                var geminiService = HttpContext.RequestServices.GetRequiredService<IGeminiService>();
+                _logger.LogInformation("GeminiService obtenido: {Service}", geminiService != null);
+                
+                // Probar directamente con Gemini Pro
+                _logger.LogInformation("Llamando a GetChatResponseAsync...");
+                var aiResponse = await geminiService.GetChatResponseAsync(message, "Test directo");
+                _logger.LogInformation("Respuesta recibida: {Response}", aiResponse);
+                
+                return Ok(new
+                {
+                    originalMessage = message,
+                    aiResponse = aiResponse,
+                    timestamp = DateTime.UtcNow,
+                    aiWorking = true,
+                    message = "Gemini Pro está funcionando correctamente",
+                    testType = "Direct Google Cloud API call"
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error probando Gemini Pro directamente");
+                return StatusCode(500, new { message = $"Error probando Gemini Pro: {ex.Message}", aiWorking = false });
+            }
+        }
+
+        [HttpPost("test-chat")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ChatbotResponseDTO>> TestChat([FromBody] ChatbotMessageDTO message)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(message.Message))
+                {
+                    return BadRequest(new { message = "El mensaje es requerido" });
+                }
+
+                // Simular un usuario ID para la prueba
+                message.UserId = 1;
+
+                var response = await _chatbotService.ProcessMessageAsync(message);
+                
+                _logger.LogInformation("Test Chat procesó mensaje: {Message} -> Intent: {Intent}, Confidence: {Confidence}", 
+                    message.Message, response.Intent, response.Confidence);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error en el test chat");
+                return StatusCode(500, new { message = "Error interno del servidor" });
+            }
+        }
+
         private int? GetCurrentUserId()
         {
             // Extraer el ID del usuario del token JWT

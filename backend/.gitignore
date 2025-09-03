@@ -1,4 +1,5 @@
 # API Keys y credenciales
+appsettings.json
 appsettings.Development.json
 appsettings.Production.json
 credentials/
@@ -54,4 +55,3 @@ uploads/
 
 # Archivos de configuración específicos del entorno
 appsettings.*.json
-!appsettings.json

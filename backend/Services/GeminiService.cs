@@ -34,28 +34,26 @@ namespace GEEKS.Services
             _location = _configuration["GoogleCloud:Location"];
             _modelId = _configuration["GoogleCloud:Model"];
             
-            if (string.IsNullOrEmpty(_projectId))
+            // Verificar que la API key esté configurada
+            var apiKey = _configuration["GoogleCloud:ApiKey"];
+            if (string.IsNullOrEmpty(apiKey))
             {
-                throw new InvalidOperationException("Google Cloud Project ID no configurado");
+                throw new InvalidOperationException("Google Cloud API Key no configurada");
             }
             
-            // Configurar credenciales de Google Cloud
-            var credentialsPath = _configuration["GoogleCloud:CredentialsPath"];
-            if (!string.IsNullOrEmpty(credentialsPath))
-            {
-                var fullPath = Path.Combine(Directory.GetCurrentDirectory(), credentialsPath);
-                Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", fullPath);
-                _logger.LogInformation("Credenciales de Google Cloud configuradas desde: {Path}", fullPath);
-            }
+            _logger.LogInformation("GeminiService configurado con modelo: {Model}", _modelId);
         }
 
         public async Task<string> GetChatResponseAsync(string userMessage, string context)
         {
             try
             {
-                _logger.LogInformation("Enviando mensaje a Gemini Pro: {Message}", userMessage);
+                _logger.LogInformation("=== INICIANDO LLAMADA A GEMINI PRO ===");
+                _logger.LogInformation("Mensaje: {Message}", userMessage);
+                _logger.LogInformation("Contexto: {Context}", context); 
                 
                 var systemPrompt = BuildSystemPrompt(context);
+                _logger.LogInformation("System Prompt: {Prompt}", systemPrompt);
                 
                 // INTEGRACIÓN REAL CON GEMINI PRO
                 var request = new
@@ -75,7 +73,8 @@ namespace GEEKS.Services
                     {
                         maxOutputTokens = int.Parse(_configuration["GoogleCloud:MaxTokens"] ?? "500"),
                         temperature = float.Parse(_configuration["GoogleCloud:Temperature"] ?? "0.7")
-                    }
+                    },
+
                 };
                 
                 var json = JsonSerializer.Serialize(request);
@@ -85,7 +84,13 @@ namespace GEEKS.Services
                 var apiKey = _configuration["GoogleCloud:ApiKey"];
                 var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_modelId}:generateContent?key={apiKey}";
                 
+                _logger.LogInformation("URL: {Url}", url);
+                _logger.LogInformation("API Key configurada: {HasKey}", !string.IsNullOrEmpty(apiKey));
+                _logger.LogInformation("Request body: {Body}", json);
+                
                 var response = await _httpClient.PostAsync(url, content);
+                
+                _logger.LogInformation("Response status: {Status}", response.StatusCode);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -172,7 +177,7 @@ namespace GEEKS.Services
 
         private string BuildSystemPrompt(string context)
         {
-            return $@"Eres un asistente virtual experto en e-commerce de GEEKS, una tienda de tecnología y productos gaming.
+            return $@"Eres GEEK-Bot, el asistente virtual oficial de GEEKS, una tienda de tecnología y productos gaming.
 
 CONTEXTO ACTUAL: {context}
 
@@ -180,6 +185,8 @@ INSTRUCCIONES:
 - Responde de forma natural, amigable y profesional en español
 - Sé útil y específico con las respuestas
 - Si te preguntan sobre productos, sugiere opciones relevantes
+- Para especificaciones técnicas detalladas o comparaciones, puedes buscar información actualizada en internet
+- Siempre menciona cuando uses información de fuentes externas
 - Mantén un tono conversacional pero informativo
 - Si no estás seguro de algo, sugiere alternativas útiles
 - Usa emojis ocasionalmente para hacer la conversación más amigable
@@ -301,7 +308,7 @@ Responde de manera natural y útil, como un asistente de tienda real.";
             // Respuestas inteligentes basadas en patrones
             if (message.Contains("hola") || message.Contains("buenos") || message.Contains("buenas"))
             {
-                return "¡Hola! 👋 Soy tu asistente virtual de GEEKS. Estoy aquí para ayudarte con cualquier consulta sobre nuestros productos de tecnología y gaming. ¿En qué puedo asistirte hoy? 🎮💻";
+                return "¡Hola! 👋 Soy GEEK-Bot, tu asistente virtual oficial de GEEKS. Estoy aquí para ayudarte con cualquier consulta sobre nuestros productos de tecnología y gaming. ¿En qué puedo asistirte hoy? 🎮💻";
             }
             
             if (message.Contains("gaming") || message.Contains("juegos") || message.Contains("gamer"))
@@ -354,7 +361,7 @@ Responde de manera natural y útil, como un asistente de tienda real.";
             }
             
             // Respuesta por defecto inteligente
-            return "¡Interesante pregunta! 🤔 Como asistente virtual de GEEKS, puedo ayudarte con:\n\n" +
+            return "¡Interesante pregunta! 🤔 Como GEEK-Bot, el asistente oficial de GEEKS, puedo ayudarte con:\n\n" +
                    "🎮 **Productos Gaming**: Desde periféricos hasta hardware completo\n" +
                    "💻 **Tecnología**: Componentes, dispositivos móviles, smart home\n" +
                    "🔍 **Búsqueda**: Encontrar exactamente lo que necesitas\n" +

@@ -1,62 +1,73 @@
-# 🚀 Configuración del Backend GEEKS
+# Configuración del Backend - GEEKS
 
-## 📋 **PASOS PARA CONFIGURAR EL PROYECTO**
+## Configuración Inicial
 
-### 1. **Configurar Base de Datos**
+### 1. Configurar appsettings.json
+
+Copia el archivo de ejemplo y configura tus credenciales:
+
 ```bash
-# Instalar PostgreSQL
-# Crear base de datos: geeks-auth
-# Actualizar ConnectionString en appsettings.json
+cp appsettings.Example.json appsettings.json
 ```
 
-### 2. **Configurar API Keys**
+### 2. Configurar Base de Datos PostgreSQL
 
-#### **Para Gemini Pro (Google Cloud):**
-1. Ve a [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Crea una nueva API Key
-3. Copia `appsettings.Example.json` a `appsettings.json`
-4. Reemplaza `YOUR_GEMINI_API_KEY_HERE` con tu API Key real
+1. Instala PostgreSQL en tu sistema
+2. Crea una base de datos llamada `geeks-auth`
+3. Actualiza la cadena de conexión en `appsettings.json`:
 
-#### **Para Google Cloud Service Account (Opcional):**
-1. Ve a [Google Cloud Console](https://console.cloud.google.com/)
-2. Crea un Service Account
-3. Descarga el archivo JSON de credenciales
-4. Colócalo en `credentials/service-account.json`
+```json
+"ConnectionStrings": {
+  "PostgreSQLConnection": "Server=localhost;Port=5432;Database=geeks-auth;Username=postgres;Password=TU_PASSWORD_AQUI;"
+}
+```
 
-### 3. **Ejecutar el Proyecto**
+### 3. Configurar Google Cloud Gemini API
+
+1. Ve a [Google AI Studio](https://aistudio.google.com/)
+2. Crea un nuevo proyecto o usa uno existente
+3. Genera una API Key para Gemini
+4. Actualiza la configuración en `appsettings.json`:
+
+```json
+"GoogleCloud": {
+  "ProjectId": "tu-project-id-aqui",
+  "Location": "us-central1",
+  "Model": "gemini-1.5-flash",
+  "MaxTokens": 500,
+  "Temperature": 0.7,
+  "CredentialsPath": "credentials/service-account.json",
+  "ApiKey": "TU_GEMINI_API_KEY_AQUI"
+}
+```
+
+### 4. Ejecutar Migraciones
+
 ```bash
-cd backend
-dotnet restore
+dotnet ef database update
+```
+
+### 5. Ejecutar el Backend
+
+```bash
 dotnet run
 ```
 
-## 🔒 **SEGURIDAD**
+El backend estará disponible en `http://localhost:5000`
 
-- **NUNCA** subas archivos con API Keys reales a GitHub
-- Usa `appsettings.Development.json` para desarrollo local
-- Usa variables de entorno en producción
+## Características del Chatbot
 
-## 📁 **ESTRUCTURA DE ARCHIVOS**
+- **Intent Detection**: Detecta automáticamente la intención del usuario
+- **Product Recommendations**: Recomienda productos del catálogo
+- **Specifications**: Proporciona especificaciones técnicas detalladas de cualquier producto
+- **Comparisons**: Compara productos técnicamente
+- **Context Awareness**: Mantiene contexto de la conversación
+- **Gemini Pro Integration**: Usa Google Cloud Gemini Pro para respuestas inteligentes
 
-```
-backend/
-├── appsettings.json          # Configuración base (sin API Keys)
-├── appsettings.Example.json  # Ejemplo con placeholders
-├── credentials/              # Credenciales (ignorado por git)
-│   └── service-account.json  # Google Cloud credentials
-└── .gitignore               # Archivos a ignorar
-```
+## Endpoints del Chatbot
 
-## 🎯 **ENDPOINTS PRINCIPALES**
-
-- `GET /api/Chatbot/health` - Estado del chatbot
 - `POST /api/Chatbot/chat` - Enviar mensaje al chatbot
-- `GET /api/Chatbot/test-ai` - Probar IA directamente
-
-## 🤖 **CHATBOT CON GEMINI PRO**
-
-El chatbot está integrado con **Google Cloud Gemini Pro** para:
-- Respuestas inteligentes y contextuales
-- Recomendaciones de productos
-- Soporte en español
-- Fallback inteligente si la IA falla
+- `GET /api/Chatbot/recommendations` - Obtener recomendaciones
+- `GET /api/Chatbot/context` - Obtener contexto del chatbot
+- `GET /api/Chatbot/health` - Verificar estado del chatbot
+- `POST /api/Chatbot/test-chat` - Endpoint de prueba (sin autenticación)

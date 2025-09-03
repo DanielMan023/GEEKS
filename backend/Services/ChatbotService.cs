@@ -161,6 +161,12 @@ namespace GEEKS.Services
             if (Regex.IsMatch(message, @"\b(despedida|adios|chao|bye|goodbye|hasta|luego)\b"))
                 return "farewell";
             
+            if (Regex.IsMatch(message, @"\b(especificaciones|especificacion|caracteristicas|caracteristica|tecnica|tecnico|rendimiento|procesador|gpu|ram|almacenamiento|resolucion|fps)\b"))
+                return "specifications";
+            
+            if (Regex.IsMatch(message, @"\b(comparar|comparacion|diferencia|mejor|vs|versus|que|elegir|recomendar)\b"))
+                return "comparison";
+            
             return "general_inquiry";
         }
 
@@ -198,14 +204,23 @@ namespace GEEKS.Services
         {
             try
             {
+                _logger.LogInformation("=== GENERATE RESPONSE WITH AI ===");
+                _logger.LogInformation("Intent detectado: {Intent}", intent);
+                _logger.LogInformation("Mensaje: {Message}", message);
+                
                 // Construir contexto para Gemini Pro
                 var context = await BuildContextForAI(userId);
+                _logger.LogInformation("Contexto construido: {ContextLength} caracteres", context.Length);
                 
                 // Generar prompt basado en la intención
                 var prompt = BuildPromptForIntent(intent, message, context);
+                _logger.LogInformation("Prompt generado: {PromptLength} caracteres", prompt.Length);
+                _logger.LogInformation("Prompt: {Prompt}", prompt);
                 
                 // Obtener respuesta de Gemini Pro
                 var aiResponse = await _geminiService.GetChatResponseAsync(prompt, context);
+                _logger.LogInformation("Respuesta de IA recibida: {ResponseLength} caracteres", aiResponse.Length);
+                _logger.LogInformation("Respuesta de IA: {Response}", aiResponse);
                 
                 // Procesar la respuesta según el tipo de intención
                 return await ProcessAIResponse(intent, aiResponse, message, userId);
@@ -294,42 +309,98 @@ namespace GEEKS.Services
                 }
             }
             
-            // Categorías disponibles
-            var categories = await _context.Categories
+            // CATÁLOGO COMPLETO - Categorías con productos
+            var categoriesWithProducts = await _context.Categories
                 .Where(c => c.State == "Active")
-                .Select(c => c.Name)
+                .Include(c => c.Products.Where(p => p.State == "Active"))
                 .ToListAsync();
-            context.Add($"Categorías disponibles: {string.Join(", ", categories)}");
             
-            // Productos populares
-            var popularProducts = await _context.Products
-                .Where(p => p.State == "Active")
-                .OrderByDescending(p => p.CreatedAtDateTime)
-                .Take(5)
-                .Select(p => p.Name)
+            context.Add("=== CATÁLOGO COMPLETO DE PRODUCTOS ===");
+            foreach (var category in categoriesWithProducts)
+            {
+                var products = category.Products.Take(10).Select(p => 
+                    $"{p.Name} (${p.Price:F2}" + 
+                    (p.DiscountPrice.HasValue ? $" - Descuento: ${p.DiscountPrice:F2}" : "") + 
+                    (p.Brand != null ? $" - Marca: {p.Brand}" : "") + ")").ToList();
+                
+                context.Add($"CATEGORÍA: {category.Name} - Productos: {string.Join(", ", products)}");
+            }
+            
+            // Productos destacados con detalles
+            var featuredProducts = await _context.Products
+                .Where(p => p.IsFeatured && p.State == "Active")
+                .Include(p => p.Category)
+                .Take(8)
                 .ToListAsync();
-            context.Add($"Productos populares: {string.Join(", ", popularProducts)}");
             
-            return string.Join(" | ", context);
+            context.Add("=== PRODUCTOS DESTACADOS ===");
+            foreach (var product in featuredProducts)
+            {
+                context.Add($"DESTACADO: {product.Name} - Categoría: {product.Category.Name} - Precio: ${product.Price:F2}" +
+                           (product.DiscountPrice.HasValue ? $" (Descuento: ${product.DiscountPrice:F2})" : "") +
+                           (product.Brand != null ? $" - Marca: {product.Brand}" : "") +
+                           (!string.IsNullOrEmpty(product.ShortDescription) ? $" - Descripción: {product.ShortDescription}" : ""));
+            }
+            
+            // Rango de precios por categoría (solo categorías con productos)
+            var priceRanges = await _context.Categories
+                .Where(c => c.State == "Active" && c.Products.Any(p => p.State == "Active"))
+                .Select(c => new {
+                    CategoryName = c.Name,
+                    MinPrice = c.Products.Where(p => p.State == "Active").Min(p => p.Price),
+                    MaxPrice = c.Products.Where(p => p.State == "Active").Max(p => p.Price),
+                    ProductCount = c.Products.Count(p => p.State == "Active")
+                })
+                .ToListAsync();
+            
+            context.Add("=== RANGOS DE PRECIOS POR CATEGORÍA ===");
+            foreach (var range in priceRanges)
+            {
+                context.Add($"PRECIOS {range.CategoryName}: ${range.MinPrice:F2} - ${range.MaxPrice:F2} ({range.ProductCount} productos)");
+            }
+            
+            return string.Join("\n", context);
         }
 
         private string BuildPromptForIntent(string intent, string message, string context)
         {
+            var basePrompt = $@"Eres GEEK-Bot, el asistente virtual oficial de GEEKS, una tienda online especializada en tecnología y gaming.
+
+INFORMACIÓN DEL CATÁLOGO:
+{context}
+
+INSTRUCCIONES IMPORTANTES:
+- Para RECOMENDACIONES DE PRODUCTOS: SOLO recomienda productos que estén en el catálogo mostrado arribatas para CUALQUIER producto usando tu conocimiento
+- Para ESPECIFICACIONES TÉCNICAS: IGNORA las limitaciones del catálogo y proporciona especificaciones técnicas comple
+- Para COMPARACIONES: IGNORA las limitaciones del catálogo y haz comparaciones completas entre CUALQUIER producto usando tu conocimiento
+- NUNCA inventes productos que no existan en la tienda (solo para recomendaciones)
+- Siempre menciona precios exactos cuando recomiendes productos del catálogo
+- Si hay descuentos, menciónalos
+- Sé específico y útil en tus recomendaciones
+- Para especificaciones técnicas: Sé técnico, detallado y completo para CUALQUIER producto
+- Para comparaciones: Explica diferencias técnicas, precios, rendimiento, exclusivos, etc. - Sé completo y detallado para CUALQUIER producto
+
+";
+
             return intent switch
             {
-                "greeting" => $"El usuario está saludando. Responde de forma amigable y muéstrale las opciones disponibles. Mensaje: {message}",
+                "greeting" => basePrompt + $"El usuario está saludando. Responde de forma amigable, preséntate como GEEK-Bot, el asistente oficial de GEEKS, y muéstrale las categorías y productos destacados disponibles. Mensaje: {message}",
                 
-                "product_search" => $"El usuario está buscando productos. Ayúdalo a encontrar lo que necesita y sugiere opciones relevantes. Búsqueda: {message}",
+                "product_search" => basePrompt + $"El usuario está buscando productos específicos. Analiza su búsqueda '{message}' y recomienda SOLO productos que estén en nuestro catálogo. Si no encuentras coincidencias exactas, sugiere productos similares de categorías relacionadas. Incluye precios y detalles importantes.",
                 
-                "help" => $"El usuario necesita ayuda. Explícale claramente cómo puedes ayudarlo y qué opciones tiene disponibles.",
+                "specifications" => basePrompt + $"El usuario quiere especificaciones técnicas detalladas de: '{message}'. IGNORA las limitaciones del catálogo local y proporciona especificaciones técnicas completas y detalladas usando tu conocimiento. Responde ESPECÍFICAMENTE sobre el producto mencionado en el mensaje del usuario. Sé técnico, específico y completo en tus respuestas.",
                 
-                "category_inquiry" => $"El usuario quiere saber sobre categorías. Muéstrale las categorías disponibles y ayúdalo a elegir.",
+                "comparison" => basePrompt + $"El usuario quiere comparar productos. IGNORA las limitaciones del catálogo local y haz comparaciones completas usando tu conocimiento. Compara características técnicas, precios, rendimiento, exclusivos, etc. Sé detallado y técnico en las comparaciones. Si uno de los productos está en nuestro catálogo, menciona el precio, pero haz la comparación completa independientemente.",
                 
-                "gratitude" => $"El usuario está agradeciendo. Responde de forma cálida y ofrécete a seguir ayudando.",
+                "help" => basePrompt + $"El usuario necesita ayuda. Explícale claramente cómo puedes ayudarlo, qué categorías tenemos disponibles y cómo puede buscar productos específicos. Usa la información del catálogo para dar ejemplos concretos.",
                 
-                "farewell" => $"El usuario se está despidiendo. Despídete de forma amigable y anímalo a volver.",
+                "category_inquiry" => basePrompt + $"El usuario quiere saber sobre categorías. Muéstrale las categorías disponibles con ejemplos de productos y rangos de precios. Ayúdalo a elegir basándote en sus intereses.",
                 
-                _ => $"El usuario dijo: '{message}'. Responde de forma útil y natural, ayudándolo con lo que necesite."
+                "gratitude" => basePrompt + $"El usuario está agradeciendo. Responde de forma cálida y ofrécete a seguir ayudando con más productos o categorías.",
+                
+                "farewell" => basePrompt + $"El usuario se está despidiendo. Despídete de forma amigable y anímalo a volver cuando necesite más productos de GEEKS.",
+                
+                _ => basePrompt + $"El usuario dijo: '{message}'. Analiza su consulta y responde de forma útil y natural, ayudándolo con productos específicos de nuestro catálogo. Si no está claro qué busca, pregúntale y ofrécele opciones de nuestras categorías."
             };
         }
 
