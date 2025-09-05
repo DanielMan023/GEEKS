@@ -12,13 +12,14 @@ import PublicRoute from './components/PublicRoute';
 import RouteGuard from './components/guards/RouteGuard';
 import RoleBasedRedirect from './components/RoleBasedRedirect';
 import { CartWidget } from './components/cart';
+import ChatbotWidget from './components/chatbot/ChatbotWidget';
 
 const AppContent: React.FC = () => {
   const location = useLocation();
   
-  // Rutas donde NO debe aparecer el carrito
-  const hideCartRoutes = ['/login', '/register'];
-  const shouldShowCart = !hideCartRoutes.includes(location.pathname);
+  // Rutas donde NO debe aparecer el carrito ni el chatbot
+  const hideWidgetRoutes = ['/login', '/register'];
+  const shouldShowWidgets = !hideWidgetRoutes.includes(location.pathname);
 
   return (
     <>
@@ -62,8 +63,13 @@ const AppContent: React.FC = () => {
         <Route path="*" element={<RoleBasedRedirect />} />
       </Routes>
       
-      {/* Widget del carrito - solo visible en rutas protegidas */}
-      {shouldShowCart && <CartWidget />}
+      {/* Widgets - solo visibles en rutas protegidas */}
+      {shouldShowWidgets && (
+        <>
+          <CartWidget />
+          <ChatbotWidget />
+        </>
+      )}
     </>
   );
 };

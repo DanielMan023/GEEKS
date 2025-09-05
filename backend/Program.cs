@@ -64,6 +64,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<DatabaseSeeder>();
 
+// SERVICIOS DE IA Y CHATBOT
+builder.Services.AddScoped<IChatbotService, ChatbotService>();
+builder.Services.AddHttpClient<IGeminiService, GeminiService>();
+
 // SERVICIOS DEL CARRITO
 builder.Services.AddScoped<ICartService, CartService>();
 

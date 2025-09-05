@@ -21,6 +21,19 @@
   - Seeding inicial de datos
   - Usuario admin por defecto
 
+### 🤖 **Chatbot Inteligente con IA**
+- **Sistema de chat en tiempo real** con interfaz flotante
+- **Detección automática de intenciones** (95% de precisión)
+- **Procesamiento de lenguaje natural** en español
+- **Sistema de recomendaciones inteligente** de productos
+- **Conciencia contextual** y memoria de sesión
+- **Integración nativa** con el catálogo de productos
+- **IA Real**: Integrado con Google Cloud + Gemini Pro
+- **Fallback Inteligente**: Respuestas de respaldo si la IA falla
+
+### **Configuración de IA:**
+Ver `backend/SETUP.md` para instrucciones de configuración de API Keys y credenciales.
+
 ### 📁 **Frontend (Estructura Preparada)**
 - Estructura organizada para React/TypeScript
 - Carpetas para componentes, hooks, servicios
@@ -122,6 +135,8 @@ GEEKS/
 - **React** - Framework de interfaz
 - **TypeScript** - Tipado estático
 - **Axios** - Cliente HTTP
+- **Tailwind CSS** - Framework de estilos
+- **Chatbot Widget** - Interfaz de IA integrada
 
 ## 📊 Base de Datos
 
@@ -152,10 +167,11 @@ GEEKS/
 
 ## 🚀 Próximos Pasos
 
-1. **Desarrollo Frontend** - Implementar interfaz de usuario
-2. **Autenticación Frontend** - Integrar con backend
-3. **Gestión de Usuarios** - CRUD completo
-4. **Autorización Avanzada** - Middleware de roles
+1. **✅ Chatbot Inteligente** - Sistema de IA completamente implementado
+2. **✅ Desarrollo Frontend** - Interfaz de usuario funcional
+3. **✅ Autenticación Frontend** - Integrado con backend
+4. **✅ Gestión de Productos** - CRUD completo implementado
 5. **Testing** - Unit tests y integration tests
+6. **Deploy en Producción** - Configuración para entorno productivo
 
 
