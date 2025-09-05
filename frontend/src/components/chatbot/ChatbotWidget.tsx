@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Bot, User, ShoppingBag, TrendingUp, Search } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { chatbotService } from '../../services/chatbotService';
 import { ChatMessage, ChatbotResponse, QuickReply, ProductRecommendation } from '../../types/chatbot';
 import { fileService } from '../../services/fileService';
@@ -181,8 +182,61 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ className = '' }) => {
                       : 'bg-gray-100 text-gray-800'
                   }`}
                 >
-                  {/* Mensaje de texto */}
-                  <div className="whitespace-pre-wrap">{message.text}</div>
+                  {/* Mensaje de texto con markdown */}
+                  <div className={`prose prose-sm max-w-none ${
+                    message.isUser 
+                      ? 'prose-invert' 
+                      : 'prose-gray'
+                  }`}>
+                    <ReactMarkdown
+                      components={{
+                        table: ({ children }) => (
+                          <div className="overflow-x-auto my-4">
+                            <table className="w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+                              {children}
+                            </table>
+                          </div>
+                        ),
+                        thead: ({ children }) => (
+                          <thead className="bg-gray-50">
+                            {children}
+                          </thead>
+                        ),
+                        tbody: ({ children }) => (
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {children}
+                          </tbody>
+                        ),
+                        th: ({ children }) => (
+                          <th className="border border-gray-300 bg-gray-100 px-4 py-3 text-left font-semibold text-gray-900 text-sm">
+                            {children}
+                          </th>
+                        ),
+                        td: ({ children }) => (
+                          <td className="border border-gray-300 px-4 py-3 text-sm text-gray-700">
+                            {children}
+                          </td>
+                        ),
+                        tr: ({ children }) => (
+                          <tr className="hover:bg-gray-50 transition-colors">
+                            {children}
+                          </tr>
+                        ),
+                        strong: ({ children }) => (
+                          <strong className="font-bold text-gray-900">
+                            {children}
+                          </strong>
+                        ),
+                        code: ({ children }) => (
+                          <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">
+                            {children}
+                          </code>
+                        ),
+                      }}
+                    >
+                      {message.text}
+                    </ReactMarkdown>
+                  </div>
                   
                   {/* Respuestas rápidas */}
                   {message.quickReplies && !message.isUser && (
