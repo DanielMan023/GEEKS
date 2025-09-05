@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SidebarProvider } from './contexts/SidebarContext';
 import { CartProvider } from './contexts/CartContext';
@@ -14,6 +14,12 @@ import RoleBasedRedirect from './components/RoleBasedRedirect';
 import { CartWidget } from './components/cart';
 
 const AppContent: React.FC = () => {
+  const location = useLocation();
+  
+  // Rutas donde NO debe aparecer el carrito
+  const hideCartRoutes = ['/login', '/register'];
+  const shouldShowCart = !hideCartRoutes.includes(location.pathname);
+
   return (
     <>
       <Routes>
@@ -56,8 +62,8 @@ const AppContent: React.FC = () => {
         <Route path="*" element={<RoleBasedRedirect />} />
       </Routes>
       
-      {/* Widget del carrito - visible en todas las rutas protegidas */}
-      <CartWidget />
+      {/* Widget del carrito - solo visible en rutas protegidas */}
+      {shouldShowCart && <CartWidget />}
     </>
   );
 };

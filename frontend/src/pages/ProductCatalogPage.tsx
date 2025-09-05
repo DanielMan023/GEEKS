@@ -10,11 +10,7 @@ const ProductCatalogPage: React.FC = () => {
   const handleProductClick = (product: ProductList) => {
     // Aquí puedes navegar al detalle del producto o abrir un modal
     console.log('Producto clickeado:', product);
-    // Por ahora solo mostramos en consola
-    alert(`Producto: ${product.name}\nPrecio: ${new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP'
-    }).format(product.price)}`);
+    // Por ahora solo mostramos en consola, sin alertas molestas
   };
 
   return (

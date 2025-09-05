@@ -51,6 +51,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     loading: false,
     error: null,
   });
+  
 
   const addToCart = async (productId: number, quantity: number) => {
     try {
@@ -74,7 +75,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       const result = await response.json();
       dispatch({ type: 'SET_CART', payload: result.data });
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Error desconocido' });
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
     }
   };
 
@@ -126,7 +128,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       const result = await response.json();
       dispatch({ type: 'SET_CART', payload: result.data });
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Error desconocido' });
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
     }
   };
 
@@ -148,7 +151,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       const result = await response.json();
       dispatch({ type: 'SET_CART', payload: result.data });
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Error desconocido' });
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
     }
   };
 
