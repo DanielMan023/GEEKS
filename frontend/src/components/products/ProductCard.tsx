@@ -2,6 +2,7 @@ import React from 'react';
 import { ProductList } from '../../types/product';
 import { fileService } from '../../services/fileService';
 import PlaceholderImage from '../common/PlaceholderImage';
+import { AddToCartButton } from '../cart';
 
 interface ProductCardProps {
   product: ProductList;
@@ -129,9 +130,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         {/* Stock */}
-        <div className={`text-xs font-medium ${stockStatus.color}`}>
+        <div className={`text-xs font-medium ${stockStatus.color} mb-3`}>
           {stockStatus.text}
         </div>
+
+        {/* Botón de agregar al carrito */}
+        {product.stock > 0 && (
+          <div className="pt-2 border-t border-gray-100">
+            <AddToCartButton
+              productId={product.id}
+              productName={product.name}
+              variant="primary"
+              size="sm"
+              className="w-full"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
