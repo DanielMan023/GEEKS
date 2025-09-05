@@ -64,6 +64,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<DatabaseSeeder>();
 
+// SERVICIOS DEL CARRITO
+builder.Services.AddScoped<ICartService, CartService>();
+
 // Contexto de base de datos
 var connectionString = builder.Configuration.GetConnectionString("PostgreSQLConnection");
 builder.Services.AddDbContext<DBContext>(options =>
