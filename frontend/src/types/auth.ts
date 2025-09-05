@@ -14,14 +14,21 @@ export interface AuthResponse {
   message: string;
   data: {
     token: string;
-    user: {
-      id: string;
-      email: string;
-      firstName: string;
-      lastName: string;
-      role: string;
-    };
+    user: User;
   };
+}
+
+export interface Role {
+  id: number;
+  name: string;
+  scope: string;
+  description: string;
+  state: string;
+  users: any[];
+  createdAtDateTime: string;
+  updatedAtDateTime: string;
+  idUserCreated: number | null;
+  idUserUpdated: number | null;
 }
 
 export interface User {
@@ -29,6 +36,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: string;
+  phoneNumber: string | null;
+  role: Role;
 }
 

@@ -1,7 +1,8 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SidebarProvider } from './contexts/SidebarContext';
+import { CartProvider } from './contexts/CartContext';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
@@ -10,49 +11,61 @@ import ProductManagementPage from './pages/ProductManagementPage';
 import PublicRoute from './components/PublicRoute';
 import RouteGuard from './components/guards/RouteGuard';
 import RoleBasedRedirect from './components/RoleBasedRedirect';
+import { CartWidget } from './components/cart';
 import ChatbotWidget from './components/chatbot/ChatbotWidget';
 
 const AppContent: React.FC = () => {
+  const location = useLocation();
+  
+  // Rutas donde NO debe aparecer el carrito
+  const hideCartRoutes = ['/login', '/register'];
+  const shouldShowCart = !hideCartRoutes.includes(location.pathname);
+
   return (
-    <Routes>
-      {/* Ruta raíz - redirigir según autenticación y rol */}
-      <Route path="/" element={<RoleBasedRedirect />} />
+    <>
+      <Routes>
+        {/* Ruta raíz - redirigir según autenticación y rol */}
+        <Route path="/" element={<RoleBasedRedirect />} />
+        
+        {/* Rutas públicas - solo accesibles si NO estás autenticado */}
+        <Route path="/login" element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        } />
+        
+        <Route path="/register" element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        } />
+        
+        {/* Rutas protegidas - solo accesibles si estás autenticado */}
+        <Route path="/dashboard/*" element={
+          <RouteGuard>
+            <Dashboard />
+          </RouteGuard>
+        } />
+        
+        <Route path="/catalog" element={
+          <RouteGuard>
+            <ProductCatalogPage />
+          </RouteGuard>
+        } />
+        
+        <Route path="/admin/products" element={
+          <RouteGuard>
+            <ProductManagementPage />
+          </RouteGuard>
+        } />
+        
+        {/* Ruta por defecto - redirigir según rol */}
+        <Route path="*" element={<RoleBasedRedirect />} />
+      </Routes>
       
-      {/* Rutas públicas - solo accesibles si NO estás autenticado */}
-      <Route path="/login" element={
-        <PublicRoute>
-          <Login />
-        </PublicRoute>
-      } />
-      
-      <Route path="/register" element={
-        <PublicRoute>
-          <Register />
-        </PublicRoute>
-      } />
-      
-      {/* Rutas protegidas - solo accesibles si estás autenticado */}
-      <Route path="/dashboard/*" element={
-        <RouteGuard>
-          <Dashboard />
-        </RouteGuard>
-      } />
-      
-      <Route path="/catalog" element={
-        <RouteGuard>
-          <ProductCatalogPage />
-        </RouteGuard>
-      } />
-      
-      <Route path="/admin/products" element={
-        <RouteGuard>
-          <ProductManagementPage />
-        </RouteGuard>
-      } />
-      
-      {/* Ruta por defecto - redirigir según rol */}
-      <Route path="*" element={<RoleBasedRedirect />} />
-    </Routes>
+      {/* Widget del carrito - solo visible en rutas protegidas */}
+      {shouldShowCart && <CartWidget />}
+    </>
   );
 };
 
@@ -60,7 +73,9 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <SidebarProvider>
-        <AppContent />
+        <CartProvider>
+          <AppContent />
+        </CartProvider>
         <ChatbotWidget />
       </SidebarProvider>
     </AuthProvider>

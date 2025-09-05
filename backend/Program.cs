@@ -68,6 +68,9 @@ builder.Services.AddScoped<DatabaseSeeder>();
 builder.Services.AddScoped<IChatbotService, ChatbotService>();
 builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 
+// SERVICIOS DEL CARRITO
+builder.Services.AddScoped<ICartService, CartService>();
+
 // Contexto de base de datos
 var connectionString = builder.Configuration.GetConnectionString("PostgreSQLConnection");
 builder.Services.AddDbContext<DBContext>(options =>
