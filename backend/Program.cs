@@ -7,6 +7,14 @@ using GEEKS.Interfaces;
 using GEEKS.Data;
 using GEEKS.Seeds;
 using Microsoft.Extensions.FileProviders;
+using GEEKS.Repositories.Interfaces;
+using GEEKS.Repositories;
+using GEEKS.Services.Interfaces;
+using GEEKS.Validators;
+using GEEKS.Mappings;
+using GEEKS.Dto;
+using FluentValidation;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +74,24 @@ builder.Services.AddScoped<DatabaseSeeder>();
 
 // SERVICIOS DEL CARRITO
 builder.Services.AddScoped<ICartService, CartService>();
+
+// REPOSITORIOS Y UNIDAD DE TRABAJO
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// SERVICIOS DE DOMINIO
+builder.Services.AddScoped<IProductService, ProductService>();
+
+// VALIDADORES
+builder.Services.AddScoped<IValidator<CreateProductDTO>, CreateProductValidator>();
+builder.Services.AddScoped<IValidator<UpdateProductDTO>, UpdateProductValidator>();
+builder.Services.AddScoped<IValidator<ProductFilterDTO>, ProductFilterValidator>();
+builder.Services.AddScoped<IValidator<LoginDTO>, LoginValidator>();
+builder.Services.AddScoped<IValidator<RegisterDTO>, RegisterValidator>();
+
+// AUTOMAPPER
+builder.Services.AddAutoMapper(cfg => {
+    cfg.AddProfile<ProductMappingProfile>();
+});
 
 // Contexto de base de datos
 var connectionString = builder.Configuration.GetConnectionString("PostgreSQLConnection");

@@ -40,5 +40,17 @@ namespace GEEKS.Dto
         public string State { get; set; } = string.Empty;
         public int ProductCount { get; set; }
     }
+
+    // DTO básico para categoría
+    public class CategoryDTO
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string? Image { get; set; }
+        public string State { get; set; } = string.Empty;
+        public DateTime CreatedAtDateTime { get; set; }
+        public DateTime? UpdatedAtDateTime { get; set; }
+    }
 }
 

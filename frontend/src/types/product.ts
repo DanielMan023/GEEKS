@@ -101,3 +101,20 @@ export interface UpdateProduct {
   height?: number;
   state?: string;
 }
+
+// Aliases para coincidir con los nombres del backend
+export type ProductResponseDTO = Product;
+export type ProductListDTO = ProductList;
+export type ProductFilterDTO = ProductFilter;
+export type CreateProductDTO = CreateProduct;
+export type UpdateProductDTO = UpdateProduct;
+
+// Tipos para categorías
+export interface CategoryListDTO {
+  id: number;
+  name: string;
+  description?: string;
+  image?: string;
+  productCount: number;
+  state: string;
+}
