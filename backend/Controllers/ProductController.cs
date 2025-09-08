@@ -1,284 +1,120 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using GEEKS.Data;
+using GEEKS.Controllers.Base;
 using GEEKS.Dto;
-using GEEKS.Models;
-using System.Linq.Dynamic.Core;
+using GEEKS.Services.Interfaces;
+using GEEKS.Utils;
 
 namespace GEEKS.Controllers
 {
+    /// <summary>
+    /// Controlador refactorizado para productos
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductController : BaseController
     {
-        private readonly DBContext _context;
+        private readonly IProductService _productService;
         private readonly ILogger<ProductController> _logger;
 
-        public ProductController(DBContext context, ILogger<ProductController> logger)
+        public ProductController(IProductService productService, ILogger<ProductController> logger)
         {
-            _context = context;
+            _productService = productService;
             _logger = logger;
         }
 
-        // GET: api/Product
+        /// <summary>
+        /// Obtiene productos con filtros y paginación
+        /// </summary>
+        /// <param name="filter">Filtros de búsqueda</param>
+        /// <returns>Lista paginada de productos</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PaginatedResponseDTO<ProductListDTO>>> GetProducts([FromQuery] ProductFilterDTO filter)
+        public async Task<IActionResult> GetProducts([FromQuery] ProductFilterDTO filter)
         {
             try
             {
-                var query = _context.Products
-                    .Include(p => p.Category)
-                    .Where(p => p.State == "Active");
-
-                // Aplicar filtros
-                if (!string.IsNullOrEmpty(filter.SearchTerm))
+                var result = await _productService.GetProductsAsync(filter);
+                if (result.Success && result.Data != null)
                 {
-                    var searchTerm = filter.SearchTerm.ToLower();
-                    query = query.Where(p => 
-                        p.Name.ToLower().Contains(searchTerm) ||
-                        p.Description.ToLower().Contains(searchTerm) ||
-                        (p.Brand != null && p.Brand.ToLower().Contains(searchTerm)) ||
-                        p.Category.Name.ToLower().Contains(searchTerm));
+                    return Ok(result.Data);
                 }
-
-                if (filter.CategoryId.HasValue)
-                {
-                    query = query.Where(p => p.CategoryId == filter.CategoryId.Value);
-                }
-
-                if (!string.IsNullOrEmpty(filter.Brand))
-                {
-                    query = query.Where(p => p.Brand == filter.Brand);
-                }
-
-                if (filter.MinPrice.HasValue)
-                {
-                    query = query.Where(p => p.Price >= filter.MinPrice.Value);
-                }
-
-                if (filter.MaxPrice.HasValue)
-                {
-                    query = query.Where(p => p.Price <= filter.MaxPrice.Value);
-                }
-
-                if (filter.InStockOnly == true)
-                {
-                    query = query.Where(p => p.Stock > 0);
-                }
-
-                if (filter.FeaturedOnly == true)
-                {
-                    query = query.Where(p => p.IsFeatured);
-                }
-
-                // Aplicar ordenamiento
-                var sortBy = filter.SortBy?.ToLower() switch
-                {
-                    "price" => "Price",
-                    "stock" => "Stock",
-                    "createdat" => "CreatedAtDateTime",
-                    "name" => "Name",
-                    _ => "Name"
-                };
-
-                var sortOrder = filter.SortOrder?.ToLower() == "desc" ? "desc" : "asc";
-                query = query.OrderBy($"{sortBy} {sortOrder}");
-
-                // Contar total antes de paginar
-                var totalCount = await query.CountAsync();
-
-                // Aplicar paginación
-                var page = Math.Max(1, filter.Page);
-                var pageSize = Math.Max(1, Math.Min(100, filter.PageSize)); // Máximo 100 por página
-                var skip = (page - 1) * pageSize;
-
-                var products = await query
-                    .Skip(skip)
-                    .Take(pageSize)
-                    .Select(p => new ProductListDTO
-                    {
-                        Id = p.Id,
-                        Name = p.Name,
-                        ShortDescription = p.ShortDescription,
-                        Price = p.Price,
-                        DiscountPrice = p.DiscountPrice,
-                        Stock = p.Stock,
-                        MainImage = p.MainImage,
-                        CategoryName = p.Category.Name,
-                        Brand = p.Brand,
-                        IsFeatured = p.IsFeatured,
-                        State = p.State
-                    })
-                    .ToListAsync();
-
-                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-
-                var response = new PaginatedResponseDTO<ProductListDTO>
-                {
-                    Data = products,
-                    TotalCount = totalCount,
-                    Page = page,
-                    PageSize = pageSize,
-                    TotalPages = totalPages,
-                    HasNextPage = page < totalPages,
-                    HasPreviousPage = page > 1
-                };
-
-                return Ok(response);
+                return HandleServiceResult(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error obteniendo productos");
-                return BadRequest(new { message = "Error interno del servidor" });
+                return HandleException(ex, _logger, "obteniendo productos");
             }
         }
 
-        // GET: api/Product/5
+        /// <summary>
+        /// Obtiene un producto por su ID
+        /// </summary>
+        /// <param name="id">ID del producto</param>
+        /// <returns>Producto encontrado</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ProductResponseDTO>> GetProduct(int id)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetProduct(int id)
         {
             try
             {
-                var product = await _context.Products
-                    .Include(p => p.Category)
-                    .FirstOrDefaultAsync(p => p.Id == id && p.State == "Active");
+                var idValidation = ValidateId(id);
+                if (idValidation != null) return idValidation;
 
-                if (product == null)
+                var result = await _productService.GetProductByIdAsync(id);
+                if (result.Success && result.Data != null)
                 {
-                    return NotFound(new { message = "Producto no encontrado" });
+                    return Ok(result.Data);
                 }
-
-                var productDto = new ProductResponseDTO
-                {
-                    Id = product.Id,
-                    Name = product.Name,
-                    Description = product.Description,
-                    ShortDescription = product.ShortDescription,
-                    Price = product.Price,
-                    DiscountPrice = product.DiscountPrice,
-                    Stock = product.Stock,
-                    MinStock = product.MinStock,
-                    SKU = product.SKU,
-                    MainImage = product.MainImage,
-                    Images = product.Images,
-                    CategoryId = product.CategoryId,
-                    CategoryName = product.Category.Name,
-                    Brand = product.Brand,
-                    State = product.State,
-                    IsFeatured = product.IsFeatured,
-                    Weight = product.Weight,
-                    Length = product.Length,
-                    Width = product.Width,
-                    Height = product.Height,
-                    CreatedAtDateTime = product.CreatedAtDateTime,
-                    UpdatedAtDateTime = product.UpdatedAtDateTime
-                };
-
-                return Ok(productDto);
+                return HandleServiceResult(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error obteniendo producto con ID: {Id}", id);
-                return BadRequest(new { message = "Error interno del servidor" });
+                return HandleException(ex, _logger, $"obteniendo producto con ID: {id}");
             }
         }
 
-        // POST: api/Product
+        /// <summary>
+        /// Crea un nuevo producto
+        /// </summary>
+        /// <param name="createProductDto">Datos del producto a crear</param>
+        /// <returns>Producto creado</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ProductResponseDTO>> CreateProduct([FromBody] CreateProductDTO createProductDto)
+        public async Task<IActionResult> CreateProduct([FromBody] CreateProductDTO createProductDto)
         {
             try
             {
-                // Validar que la categoría exista
-                var category = await _context.Categories
-                    .FirstOrDefaultAsync(c => c.Id == createProductDto.CategoryId && c.State == "Active");
-
-                if (category == null)
+                if (createProductDto == null)
                 {
-                    return BadRequest(new { message = "La categoría especificada no existe" });
+                    return BadRequest(new { message = "Datos del producto son requeridos" });
                 }
 
-                // Validar que el SKU sea único
-                var existingSku = await _context.Products
-                    .AnyAsync(p => p.SKU == createProductDto.SKU);
-
-                if (existingSku)
+                var result = await _productService.CreateProductAsync(createProductDto);
+                
+                if (result.Success && result.Data != null)
                 {
-                    return BadRequest(new { message = "El SKU ya existe" });
+                    return CreatedAtAction(nameof(GetProduct), new { id = result.Data.Id }, 
+                        new { message = result.Message, data = result.Data });
                 }
 
-                var product = new Product
-                {
-                    Name = createProductDto.Name,
-                    Description = createProductDto.Description,
-                    ShortDescription = createProductDto.ShortDescription,
-                    Price = createProductDto.Price,
-                    DiscountPrice = createProductDto.DiscountPrice,
-                    Stock = createProductDto.Stock,
-                    MinStock = createProductDto.MinStock,
-                    SKU = createProductDto.SKU,
-                    MainImage = createProductDto.MainImage,
-                    Images = createProductDto.Images,
-                    CategoryId = createProductDto.CategoryId,
-                    Brand = createProductDto.Brand,
-                    IsFeatured = createProductDto.IsFeatured,
-                    Weight = createProductDto.Weight,
-                    Length = createProductDto.Length,
-                    Width = createProductDto.Width,
-                    Height = createProductDto.Height,
-                    State = "Active"
-                };
-
-                _context.Products.Add(product);
-                await _context.SaveChangesAsync();
-
-                // Obtener el producto creado con la categoría
-                var createdProduct = await _context.Products
-                    .Include(p => p.Category)
-                    .FirstAsync(p => p.Id == product.Id);
-
-                var productResponseDto = new ProductResponseDTO
-                {
-                    Id = createdProduct.Id,
-                    Name = createdProduct.Name,
-                    Description = createdProduct.Description,
-                    ShortDescription = createdProduct.ShortDescription,
-                    Price = createdProduct.Price,
-                    DiscountPrice = createdProduct.DiscountPrice,
-                    Stock = createdProduct.Stock,
-                    MinStock = createdProduct.MinStock,
-                    SKU = createdProduct.SKU,
-                    MainImage = createdProduct.MainImage,
-                    Images = createdProduct.Images,
-                    CategoryId = createdProduct.CategoryId,
-                    CategoryName = createdProduct.Category.Name,
-                    Brand = createdProduct.Brand,
-                    State = createdProduct.State,
-                    IsFeatured = createdProduct.IsFeatured,
-                    Weight = createdProduct.Weight,
-                    Length = createdProduct.Length,
-                    Width = createdProduct.Width,
-                    Height = createdProduct.Height,
-                    CreatedAtDateTime = createdProduct.CreatedAtDateTime,
-                    UpdatedAtDateTime = createdProduct.UpdatedAtDateTime
-                };
-
-                return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, productResponseDto);
+                return HandleServiceResult(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creando producto");
-                return BadRequest(new { message = "Error interno del servidor" });
+                return HandleException(ex, _logger, "creando producto");
             }
         }
 
-        // PUT: api/Product/5
+        /// <summary>
+        /// Actualiza un producto existente
+        /// </summary>
+        /// <param name="id">ID del producto a actualizar</param>
+        /// <param name="updateProductDto">Datos actualizados del producto</param>
+        /// <returns>Producto actualizado</returns>
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -287,237 +123,228 @@ namespace GEEKS.Controllers
         {
             try
             {
-                var product = await _context.Products
-                    .FirstOrDefaultAsync(p => p.Id == id && p.State == "Active");
+                var idValidation = ValidateId(id);
+                if (idValidation != null) return idValidation;
 
-                if (product == null)
+                if (updateProductDto == null)
                 {
-                    return NotFound(new { message = "Producto no encontrado" });
+                    return BadRequest(new { message = "Datos del producto son requeridos" });
                 }
 
-                // Validar que la categoría exista si se va a cambiar
-                if (updateProductDto.CategoryId.HasValue)
-                {
-                    var category = await _context.Categories
-                        .FirstOrDefaultAsync(c => c.Id == updateProductDto.CategoryId.Value && c.State == "Active");
-
-                    if (category == null)
-                    {
-                        return BadRequest(new { message = "La categoría especificada no existe" });
-                    }
-                }
-
-                // Validar que el SKU sea único si se va a cambiar
-                if (!string.IsNullOrEmpty(updateProductDto.SKU) && updateProductDto.SKU != product.SKU)
-                {
-                    var existingSku = await _context.Products
-                        .AnyAsync(p => p.SKU == updateProductDto.SKU && p.Id != id);
-
-                    if (existingSku)
-                    {
-                        return BadRequest(new { message = "El SKU ya existe" });
-                    }
-                }
-
-                // Actualizar solo los campos proporcionados
-                if (!string.IsNullOrEmpty(updateProductDto.Name))
-                    product.Name = updateProductDto.Name;
-
-                if (!string.IsNullOrEmpty(updateProductDto.Description))
-                    product.Description = updateProductDto.Description;
-
-                if (updateProductDto.ShortDescription != null)
-                    product.ShortDescription = updateProductDto.ShortDescription;
-
-                if (updateProductDto.Price.HasValue)
-                    product.Price = updateProductDto.Price.Value;
-
-                if (updateProductDto.DiscountPrice.HasValue)
-                    product.DiscountPrice = updateProductDto.DiscountPrice;
-
-                if (updateProductDto.Stock.HasValue)
-                    product.Stock = updateProductDto.Stock.Value;
-
-                if (updateProductDto.MinStock.HasValue)
-                    product.MinStock = updateProductDto.MinStock.Value;
-
-                if (!string.IsNullOrEmpty(updateProductDto.SKU))
-                    product.SKU = updateProductDto.SKU;
-
-                if (updateProductDto.MainImage != null)
-                    product.MainImage = updateProductDto.MainImage;
-
-                if (updateProductDto.Images != null)
-                    product.Images = updateProductDto.Images;
-
-                if (updateProductDto.CategoryId.HasValue)
-                    product.CategoryId = updateProductDto.CategoryId.Value;
-
-                if (updateProductDto.Brand != null)
-                    product.Brand = updateProductDto.Brand;
-
-                if (updateProductDto.IsFeatured.HasValue)
-                    product.IsFeatured = updateProductDto.IsFeatured.Value;
-
-                if (updateProductDto.Weight.HasValue)
-                    product.Weight = updateProductDto.Weight.Value;
-
-                if (updateProductDto.Length.HasValue)
-                    product.Length = updateProductDto.Length.Value;
-
-                if (updateProductDto.Width.HasValue)
-                    product.Width = updateProductDto.Width.Value;
-
-                if (updateProductDto.Height.HasValue)
-                    product.Height = updateProductDto.Height.Value;
-
-                if (!string.IsNullOrEmpty(updateProductDto.State))
-                    product.State = updateProductDto.State;
-
-                product.UpdatedAtDateTime = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                return Ok(new { message = "Producto actualizado correctamente" });
+                var result = await _productService.UpdateProductAsync(id, updateProductDto);
+                return HandleServiceResult(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error actualizando producto con ID: {Id}", id);
-                return BadRequest(new { message = "Error interno del servidor" });
+                return HandleException(ex, _logger, $"actualizando producto con ID: {id}");
             }
         }
 
-        // DELETE: api/Product/5
+        /// <summary>
+        /// Elimina un producto (soft delete)
+        /// </summary>
+        /// <param name="id">ID del producto a eliminar</param>
+        /// <returns>Resultado de la operación</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             try
             {
-                var product = await _context.Products
-                    .FirstOrDefaultAsync(p => p.Id == id && p.State == "Active");
+                var idValidation = ValidateId(id);
+                if (idValidation != null) return idValidation;
 
-                if (product == null)
-                {
-                    return NotFound(new { message = "Producto no encontrado" });
-                }
-
-                // Soft delete - cambiar estado en lugar de eliminar físicamente
-                product.State = "Deleted";
-                product.UpdatedAtDateTime = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                return Ok(new { message = "Producto eliminado correctamente" });
+                var result = await _productService.DeleteProductAsync(id);
+                return HandleServiceResult(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error eliminando producto con ID: {Id}", id);
-                return BadRequest(new { message = "Error interno del servidor" });
+                return HandleException(ex, _logger, $"eliminando producto con ID: {id}");
             }
         }
 
-        // DELETE: api/Product/demo/clear
+        /// <summary>
+        /// Obtiene productos destacados
+        /// </summary>
+        /// <param name="limit">Límite de productos a devolver (por defecto 10)</param>
+        /// <returns>Lista de productos destacados</returns>
+        [HttpGet("featured")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetFeaturedProducts([FromQuery] int limit = 10)
+        {
+            try
+            {
+                if (limit <= 0 || limit > 100)
+                {
+                    return BadRequest(new { message = "El límite debe estar entre 1 y 100" });
+                }
+
+                var result = await _productService.GetFeaturedProductsAsync(limit);
+                if (result.Success && result.Data != null)
+                {
+                    return Ok(result.Data);
+                }
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, _logger, "obteniendo productos destacados");
+            }
+        }
+
+        /// <summary>
+        /// Obtiene categorías con conteo de productos
+        /// </summary>
+        /// <returns>Lista de categorías</returns>
+        [HttpGet("categories")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetCategories()
+        {
+            try
+            {
+                var result = await _productService.GetCategoriesAsync();
+                if (result.Success && result.Data != null)
+                {
+                    return Ok(result.Data);
+                }
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, _logger, "obteniendo categorías");
+            }
+        }
+
+        /// <summary>
+        /// Obtiene productos con stock bajo
+        /// </summary>
+        /// <returns>Lista de productos con stock bajo</returns>
+        [HttpGet("low-stock")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetLowStockProducts()
+        {
+            try
+            {
+                var result = await _productService.GetLowStockProductsAsync();
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, _logger, "obteniendo productos con stock bajo");
+            }
+        }
+
+        /// <summary>
+        /// Actualiza el stock de un producto
+        /// </summary>
+        /// <param name="id">ID del producto</param>
+        /// <param name="stock">Nuevo stock</param>
+        /// <returns>Resultado de la operación</returns>
+        [HttpPut("{id}/stock")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateStock(int id, [FromBody] int stock)
+        {
+            try
+            {
+                var idValidation = ValidateId(id);
+                if (idValidation != null) return idValidation;
+
+                if (stock < 0)
+                {
+                    return BadRequest(new { message = "El stock no puede ser negativo" });
+                }
+
+                var result = await _productService.UpdateStockAsync(id, stock);
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, _logger, $"actualizando stock del producto con ID: {id}");
+            }
+        }
+
+        /// <summary>
+        /// Reduce el stock de un producto
+        /// </summary>
+        /// <param name="id">ID del producto</param>
+        /// <param name="quantity">Cantidad a reducir</param>
+        /// <returns>Resultado de la operación</returns>
+        [HttpPut("{id}/reduce-stock")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ReduceStock(int id, [FromBody] int quantity)
+        {
+            try
+            {
+                var idValidation = ValidateId(id);
+                if (idValidation != null) return idValidation;
+
+                if (quantity <= 0)
+                {
+                    return BadRequest(new { message = "La cantidad debe ser mayor a 0" });
+                }
+
+                var result = await _productService.ReduceStockAsync(id, quantity);
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, _logger, $"reduciendo stock del producto con ID: {id}");
+            }
+        }
+
+        /// <summary>
+        /// Elimina productos demo
+        /// </summary>
+        /// <returns>Resultado de la operación con cantidad eliminada</returns>
         [HttpDelete("demo/clear")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ClearDemoProducts()
         {
             try
             {
-                // Eliminar productos que contengan "demo" en el nombre o que sean de categorías demo
-                var demoProducts = await _context.Products
-                    .Where(p => p.State == "Active" && 
-                               (p.Name.ToLower().Contains("demo") || 
-                                p.Name.ToLower().Contains("ejemplo") ||
-                                p.SKU.ToLower().Contains("demo")))
-                    .ToListAsync();
+                var result = await _productService.ClearDemoProductsAsync();
+                return HandleServiceResult(result);
+            }
+            catch (Exception ex)
+            {
+                return HandleException(ex, _logger, "eliminando productos demo");
+            }
+        }
 
-                var deletedCount = demoProducts.Count;
-
-                foreach (var product in demoProducts)
+        /// <summary>
+        /// Verifica si un SKU es único
+        /// </summary>
+        /// <param name="sku">SKU a verificar</param>
+        /// <param name="excludeId">ID de producto a excluir de la verificación</param>
+        /// <returns>True si el SKU es único</returns>
+        [HttpGet("validate-sku")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ValidateSku([FromQuery] string sku, [FromQuery] int? excludeId = null)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(sku))
                 {
-                    product.State = "Deleted";
-                    product.UpdatedAtDateTime = DateTime.UtcNow;
+                    return BadRequest(new { message = "El SKU es requerido" });
                 }
 
-                await _context.SaveChangesAsync();
-
-                return Ok(new { 
-                    message = $"Se eliminaron {deletedCount} productos demo correctamente",
-                    deletedCount = deletedCount
-                });
+                var isUnique = await _productService.IsSkuUniqueAsync(sku, excludeId);
+                return Ok(new { isUnique = isUnique, message = isUnique ? "SKU disponible" : "SKU ya existe" });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error eliminando productos demo");
-                return BadRequest(new { message = "Error interno del servidor" });
-            }
-        }
-
-        // GET: api/Product/featured
-        [HttpGet("featured")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<ProductListDTO>>> GetFeaturedProducts()
-        {
-            try
-            {
-                var featuredProducts = await _context.Products
-                    .Include(p => p.Category)
-                    .Where(p => p.IsFeatured && p.State == "Active")
-                    .OrderByDescending(p => p.CreatedAtDateTime)
-                    .Take(10)
-                    .Select(p => new ProductListDTO
-                    {
-                        Id = p.Id,
-                        Name = p.Name,
-                        ShortDescription = p.ShortDescription,
-                        Price = p.Price,
-                        DiscountPrice = p.DiscountPrice,
-                        Stock = p.Stock,
-                        MainImage = p.MainImage,
-                        CategoryName = p.Category.Name,
-                        Brand = p.Brand,
-                        IsFeatured = p.IsFeatured,
-                        State = p.State
-                    })
-                    .ToListAsync();
-
-                return Ok(featuredProducts);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error obteniendo productos destacados");
-                return BadRequest(new { message = "Error interno del servidor" });
-            }
-        }
-
-        // GET: api/Product/categories
-        [HttpGet("categories")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<CategoryListDTO>>> GetCategories()
-        {
-            try
-            {
-                var categories = await _context.Categories
-                    .Where(c => c.State == "Active")
-                    .Select(c => new CategoryListDTO
-                    {
-                        Id = c.Id,
-                        Name = c.Name,
-                        Description = c.Description,
-                        Image = c.Image,
-                        State = c.State,
-                        ProductCount = c.Products.Count(p => p.State == "Active")
-                    })
-                    .ToListAsync();
-
-                return Ok(categories);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error obteniendo categorías");
-                return BadRequest(new { message = "Error interno del servidor" });
+                return HandleException(ex, _logger, "validando SKU");
             }
         }
     }
