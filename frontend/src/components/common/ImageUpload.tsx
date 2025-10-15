@@ -84,42 +84,44 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       
       {/* Área de subida */}
       <div className="space-y-3">
-                 {/* Preview de imagen actual */}
-         {previewImage && (
-           <div className="relative inline-block">
-             {previewImage.startsWith('data:') ? (
-               <img
-                 src={previewImage}
-                 alt="Preview"
-                 className="w-32 h-32 object-cover rounded-lg border border-gray-300"
-               />
-             ) : (
-               <PlaceholderImage 
-                 width={128} 
-                 height={128} 
-                 text="Preview" 
-                 className="w-32 h-32 rounded-lg border border-gray-300"
-               />
-             )}
-             <button
-               type="button"
-               onClick={handleRemoveImage}
-               className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-               title="Eliminar imagen"
-             >
-               <X size={16} />
-             </button>
-           </div>
-         )}
+        {/* Preview de imagen actual */}
+        {previewImage && (
+          <div className="relative inline-block">
+            {previewImage.startsWith('data:') ? (
+              <img
+                src={previewImage}
+                alt="Preview"
+                className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-lg border border-gray-300"
+              />
+            ) : (
+              <PlaceholderImage 
+                width={128} 
+                height={128} 
+                text="Preview" 
+                className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg border border-gray-300"
+              />
+            )}
+            <button
+              type="button"
+              onClick={handleRemoveImage}
+              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+              title="Eliminar imagen"
+            >
+              <X size={14} className="sm:hidden" />
+              <X size={16} className="hidden sm:block" />
+            </button>
+          </div>
+        )}
 
         {/* Botón de subida */}
         {!previewImage && (
           <div
             onClick={handleClickUpload}
-            className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-green-400 hover:bg-green-50 transition-colors"
+            className="w-24 h-24 sm:w-32 sm:h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-green-400 hover:bg-green-50 transition-colors"
           >
-            <Upload size={24} className="text-gray-400 mb-2" />
-            <span className="text-sm text-gray-500 text-center">
+            <Upload size={20} className="text-gray-400 mb-1 sm:mb-2 sm:hidden" />
+            <Upload size={24} className="text-gray-400 mb-2 hidden sm:block" />
+            <span className="text-xs sm:text-sm text-gray-500 text-center px-2">
               Click para subir
             </span>
           </div>
@@ -130,9 +132,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           <button
             type="button"
             onClick={handleClickUpload}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors w-full sm:w-auto justify-center sm:justify-start"
           >
-            <ImageIcon size={16} />
+            <ImageIcon size={14} className="sm:hidden" />
+            <ImageIcon size={16} className="hidden sm:block" />
             Cambiar imagen
           </button>
         )}
