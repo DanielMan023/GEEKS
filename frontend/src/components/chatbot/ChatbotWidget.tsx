@@ -135,28 +135,28 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ className = '' }) => {
       {!isOpen && (
                   <button
             onClick={toggleChat}
-            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+            className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white p-2.5 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
             title="Abrir chat con asistente virtual con IA"
           >
             <div className="relative">
-              <MessageCircle size={24} />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+              <MessageCircle size={20} />
+              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-yellow-400 rounded-full animate-pulse"></div>
             </div>
           </button>
       )}
 
       {/* Ventana del chat */}
       {isOpen && (
-        <div className="bg-white rounded-lg shadow-2xl w-96 h-[500px] flex flex-col border border-gray-200">
+        <div className="bg-white rounded-lg shadow-2xl w-80 sm:w-96 h-[400px] sm:h-[450px] flex flex-col border border-gray-200">
           {/* Header */}
-                      <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-4 rounded-t-lg flex items-center justify-between">
+                      <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white p-3 rounded-t-lg flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <Bot size={20} />
+                  <Bot size={18} />
                   <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                 </div>
                 <div>
-                  <div className="font-semibold">Asistente IA GEEKS</div>
+                  <div className="text-sm font-semibold">Asistente IA GEEKS</div>
                   <div className="text-xs opacity-90">Powered by Gemini Pro</div>
                 </div>
               </div>
@@ -164,19 +164,19 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ className = '' }) => {
               onClick={toggleChat}
               className="text-white hover:text-gray-200 transition-colors"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
 
           {/* Mensajes */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
+                  className={`max-w-[85%] rounded-lg p-2.5 ${
                     message.isUser
                       ? 'bg-green-600 text-white'
                       : 'bg-gray-100 text-gray-800'
@@ -240,12 +240,12 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ className = '' }) => {
                   
                   {/* Respuestas rápidas */}
                   {message.quickReplies && !message.isUser && (
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-2 space-y-1.5">
                       {message.quickReplies.map((reply, index) => (
                         <button
                           key={index}
                           onClick={() => handleQuickReply(reply)}
-                          className="block w-full text-left px-3 py-2 bg-white bg-opacity-20 rounded text-sm hover:bg-opacity-30 transition-colors"
+                          className="block w-full text-left px-2.5 py-1.5 bg-white bg-opacity-20 rounded text-xs hover:bg-opacity-30 transition-colors"
                         >
                           {reply.text}
                         </button>
@@ -255,20 +255,20 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ className = '' }) => {
 
                   {/* Sugerencias de productos */}
                   {message.productSuggestions && !message.isUser && (
-                    <div className="mt-3 space-y-2">
-                      <div className="text-xs text-gray-600 mb-2">Productos recomendados:</div>
+                    <div className="mt-2 space-y-1.5">
+                      <div className="text-xs text-gray-600 mb-1.5">Productos recomendados:</div>
                       {message.productSuggestions.map((product) => (
                         <div
                           key={product.id}
                           onClick={() => handleProductClick(product)}
-                          className="flex items-center gap-3 p-2 bg-white bg-opacity-20 rounded cursor-pointer hover:bg-opacity-30 transition-colors"
+                          className="flex items-center gap-2 p-1.5 bg-white bg-opacity-20 rounded cursor-pointer hover:bg-opacity-30 transition-colors"
                         >
-                          <div className="w-12 h-12 flex-shrink-0">
+                          <div className="w-8 h-8 flex-shrink-0">
                             {product.mainImage ? (
                               <img
                                 src={fileService.getImageUrl(product.mainImage)}
                                 alt={product.name}
-                                className="w-12 h-12 rounded object-cover"
+                                className="w-8 h-8 rounded object-cover"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
                                   target.style.display = 'none';
@@ -277,23 +277,23 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ className = '' }) => {
                               />
                             ) : (
                               <PlaceholderImage
-                                width={48}
-                                height={48}
+                                width={32}
+                                height={32}
                                 text="No Image"
-                                className="w-12 h-12 rounded"
+                                className="w-8 h-8 rounded"
                               />
                             )}
                             <PlaceholderImage
-                              width={48}
-                              height={48}
+                              width={32}
+                              height={32}
                               text="No Image"
-                              className="w-12 h-12 rounded hidden"
+                              className="w-8 h-8 rounded hidden"
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm truncate">{product.name}</div>
+                            <div className="font-medium text-xs truncate">{product.name}</div>
                             <div className="text-xs opacity-80">{product.categoryName}</div>
-                            <div className="font-bold">{formatPrice(product.price)}</div>
+                            <div className="font-bold text-xs">{formatPrice(product.price)}</div>
                           </div>
                         </div>
                       ))}
@@ -335,7 +335,7 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ className = '' }) => {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-3 border-t border-gray-200">
             <div className="flex gap-2">
               <input
                 type="text"
@@ -343,15 +343,15 @@ const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({ className = '' }) => {
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(inputMessage)}
                 placeholder="Escribe tu mensaje..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="flex-1 px-2.5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                 disabled={isLoading}
               />
               <button
                 onClick={() => handleSendMessage(inputMessage)}
                 disabled={!inputMessage.trim() || isLoading}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                <Send size={16} />
+                <Send size={14} />
               </button>
             </div>
           </div>

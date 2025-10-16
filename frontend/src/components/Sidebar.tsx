@@ -1,4 +1,4 @@
-import { LayoutDashboard, Building, Folder, ClipboardList, CalendarCheck, Users, Headphones, Sun, Settings, LayoutPanelLeft, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, Folder, Users, Settings, LayoutPanelLeft, ShoppingBag } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { twMerge } from '../utils';
 import { useSidebar } from '../contexts/SidebarContext';
@@ -31,32 +31,11 @@ const Sidebar = () => {
       show: isAdmin // Solo admin ve el dashboard
     },
     { 
-      icon: Building, 
-      label: 'Inventarios', 
-      to: '/dashboard/inventarios/lista', 
-      permission: 'canViewInventories',
-      show: permissions.canViewInventories && isAdmin
-    },
-    { 
       icon: Folder, 
       label: 'Productos', 
       to: '/admin/products', 
       permission: 'canViewProducts',
       show: permissions.canViewProducts && isAdmin
-    },
-    { 
-      icon: ClipboardList, 
-      label: 'Pedidos', 
-      to: '/dashboard/pedidos/lista', 
-      permission: 'canViewOrders',
-      show: permissions.canViewOrders && isAdmin
-    },
-    { 
-      icon: CalendarCheck, 
-      label: 'Compras', 
-      to: '/dashboard/compras/lista', 
-      permission: 'canViewPurchases',
-      show: permissions.canViewPurchases && isAdmin
     },
     { 
       icon: ShoppingBag, 
@@ -75,13 +54,6 @@ const Sidebar = () => {
       to: '/dashboard/usuarios/lista', 
       permission: 'canViewUsers',
       show: permissions.canViewUsers
-    },
-    { 
-      icon: Headphones, 
-      label: 'Usuarios Administrativos', 
-      to: '/dashboard/usuarios-administrativos/lista', 
-      permission: 'canViewAdminUsers',
-      show: permissions.canViewAdminUsers
     },
   ];
 
