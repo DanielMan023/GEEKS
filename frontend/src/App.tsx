@@ -5,7 +5,6 @@ import { SidebarProvider } from './contexts/SidebarContext';
 import { CartProvider } from './contexts/CartContext';
 import Login from './components/Login';
 import Register from './components/Register';
-import Dashboard from './components/Dashboard';
 import ProductCatalogPage from './pages/ProductCatalogPage';
 import ProductManagementPage from './pages/ProductManagementPage';
 import PublicRoute from './components/PublicRoute';
@@ -41,11 +40,6 @@ const AppContent: React.FC = () => {
         } />
         
         {/* Rutas protegidas - solo accesibles si estás autenticado */}
-        <Route path="/dashboard/*" element={
-          <RouteGuard>
-            <Dashboard />
-          </RouteGuard>
-        } />
         
         <Route path="/catalog" element={
           <RouteGuard>

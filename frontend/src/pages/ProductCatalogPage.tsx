@@ -17,7 +17,7 @@ const ProductCatalogPage: React.FC = () => {
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+      <div className={`flex-1 overflow-y-auto transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
         <ProductCatalog onProductClick={handleProductClick} />
       </div>
       <ChatbotWidget />

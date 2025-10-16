@@ -27,10 +27,10 @@ const RoleBasedRedirect: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // Si es admin, ir al dashboard
+  // Si es admin, ir a administración de productos
   if (isAdmin) {
-    console.log('RoleBasedRedirect: Admin, redirigiendo a dashboard');
-    return <Navigate to="/dashboard" replace />;
+    console.log('RoleBasedRedirect: Admin, redirigiendo a admin/products');
+    return <Navigate to="/admin/products" replace />;
   }
 
   // Si es usuario normal, ir al catálogo

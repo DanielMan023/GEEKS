@@ -135,7 +135,7 @@ const ProductManagementPage: React.FC = () => {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       <SessionTimer />
-      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+      <div className={`flex-1 overflow-y-auto transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
         <div className="p-4 sm:p-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
