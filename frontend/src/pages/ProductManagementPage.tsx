@@ -597,13 +597,15 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
                 Precio *
               </label>
               <input
-                type="number"
+                type="text"
                 required
-                min="0"
-                step="0.01"
                 value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setFormData({ ...formData, price: parseFloat(value) || 0 });
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0.00"
               />
             </div>
             
@@ -612,12 +614,14 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
                 Precio con Descuento
               </label>
               <input
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
                 value={formData.discountPrice || ''}
-                onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value ? parseFloat(e.target.value) : undefined })}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setFormData({ ...formData, discountPrice: value ? parseFloat(value) : undefined });
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0.00"
               />
             </div>
             
@@ -626,12 +630,15 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
                 Stock *
               </label>
               <input
-                type="number"
+                type="text"
                 required
-                min="0"
                 value={formData.stock}
-                onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setFormData({ ...formData, stock: parseInt(value) || 0 });
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0"
               />
             </div>
           </div>
