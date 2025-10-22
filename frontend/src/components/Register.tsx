@@ -73,7 +73,11 @@ export const Register = (): React.ReactElement => {
         password: formData.password
       });
       if (result.success) {
-        navigate('/dashboard');
+        // Mostrar mensaje de éxito y redirigir al login
+        setErrors({ success: '¡Cuenta creada exitosamente! Por favor, inicia sesión.' });
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
       } else {
         setErrors({ general: result.message });
       }
@@ -111,6 +115,12 @@ export const Register = (): React.ReactElement => {
             {errors.general && (
               <div className="bg-red-500 text-white p-3 rounded-lg text-sm text-center">
                 {errors.general}
+              </div>
+            )}
+            
+            {errors.success && (
+              <div className="bg-green-500 text-white p-3 rounded-lg text-sm text-center">
+                {errors.success}
               </div>
             )}
 
