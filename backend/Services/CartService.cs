@@ -48,8 +48,20 @@ namespace GEEKS.Services
             if (product == null)
                 throw new ArgumentException("Producto no encontrado");
 
+            // Validar stock disponible
             var existingItem = cart.CartItems
                 .FirstOrDefault(ci => ci.ProductId == addToCartDto.ProductId);
+
+            int requestedQuantity = addToCartDto.Quantity;
+            if (existingItem != null)
+            {
+                requestedQuantity += existingItem.Quantity;
+            }
+
+            if (requestedQuantity > product.Stock)
+            {
+                throw new ArgumentException($"Stock insuficiente. Solo hay {product.Stock} unidades disponibles del producto '{product.Name}'");
+            }
 
             if (existingItem != null)
             {
@@ -93,6 +105,18 @@ namespace GEEKS.Services
             if (cartItem == null)
                 throw new ArgumentException("Item del carrito no encontrado");
 
+            // Validar stock disponible
+            var product = await _context.Products
+                .FirstOrDefaultAsync(p => p.Id == cartItem.ProductId);
+
+            if (product == null)
+                throw new ArgumentException("Producto no encontrado");
+
+            if (updateCartItemDto.Quantity > product.Stock)
+            {
+                throw new ArgumentException($"Stock insuficiente. Solo hay {product.Stock} unidades disponibles del producto '{product.Name}'");
+            }
+
             cartItem.Quantity = updateCartItemDto.Quantity;
             cartItem.UpdatedAtDateTime = DateTime.UtcNow;
 
@@ -130,6 +154,53 @@ namespace GEEKS.Services
         {
             return await _context.Carts
                 .AnyAsync(c => c.UserId == userId);
+        }
+
+        public async Task<bool> ProcessCheckoutAsync(int userId)
+        {
+            var cart = await GetOrCreateCartAsync(userId);
+            
+            if (!cart.CartItems.Any())
+            {
+                throw new ArgumentException("El carrito está vacío");
+            }
+
+            // Validar stock de todos los productos antes de procesar
+            foreach (var cartItem in cart.CartItems)
+            {
+                var product = await _context.Products
+                    .FirstOrDefaultAsync(p => p.Id == cartItem.ProductId);
+
+                if (product == null)
+                {
+                    throw new ArgumentException($"Producto con ID {cartItem.ProductId} no encontrado");
+                }
+
+                if (cartItem.Quantity > product.Stock)
+                {
+                    throw new ArgumentException($"Stock insuficiente para el producto '{product.Name}'. Disponible: {product.Stock}, Solicitado: {cartItem.Quantity}");
+                }
+            }
+
+            // Descontar stock de todos los productos
+            foreach (var cartItem in cart.CartItems)
+            {
+                var product = await _context.Products
+                    .FirstOrDefaultAsync(p => p.Id == cartItem.ProductId);
+
+                if (product != null)
+                {
+                    product.Stock -= cartItem.Quantity;
+                    product.UpdatedAtDateTime = DateTime.UtcNow;
+                }
+            }
+
+            // Limpiar el carrito después del checkout exitoso
+            _context.CartItems.RemoveRange(cart.CartItems);
+            
+            await _context.SaveChangesAsync();
+            
+            return true;
         }
 
         private async Task<Cart> GetOrCreateCartAsync(int userId)

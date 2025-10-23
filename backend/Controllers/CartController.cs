@@ -168,6 +168,39 @@ namespace GEEKS.Controllers
             }
         }
 
+        [HttpPost("checkout")]
+        public async Task<ActionResult<ServiceResponse<bool>>> ProcessCheckout()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var result = await _cartService.ProcessCheckoutAsync(userId);
+
+                return Ok(new ServiceResponse<bool>
+                {
+                    Success = true,
+                    Data = result,
+                    Message = "Compra procesada exitosamente"
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Error al procesar la compra: {ex.Message}"
+                });
+            }
+        }
+
         private int GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

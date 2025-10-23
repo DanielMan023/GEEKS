@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useConfirm } from '../../hooks/useConfirm';
 import { CartItem } from './CartItem';
@@ -9,6 +10,7 @@ export const CartWidget: React.FC = () => {
   const { cart, loading, error, clearCart } = useCart();
   const { isOpen: confirmOpen, options, showConfirm, handleConfirm, handleCancel } = useConfirm();
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleCart = () => {
     setIsOpen(!isOpen);
@@ -25,6 +27,13 @@ export const CartWidget: React.FC = () => {
       },
       () => clearCart()
     );
+  };
+
+  const handleCheckout = () => {
+    if (cart && cart.cartItems.length > 0) {
+      navigate('/checkout');
+      setIsOpen(false);
+    }
   };
 
   if (loading) {
@@ -103,7 +112,7 @@ export const CartWidget: React.FC = () => {
                 <button
                   onClick={() => {
                     toggleCart();
-                    // Aquí podrías navegar al catálogo
+                    navigate('/catalog');
                   }}
                   className="px-3 py-2 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors"
                 >
@@ -142,7 +151,10 @@ export const CartWidget: React.FC = () => {
                   </svg>
                   Vaciar
                 </button>
-                <button className="flex-1 px-3 py-2 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl">
+                <button 
+                  onClick={handleCheckout}
+                  className="flex-1 px-3 py-2 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
+                >
                   <svg className="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                   </svg>

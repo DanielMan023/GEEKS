@@ -7,6 +7,8 @@ import Login from './components/Login';
 import Register from './components/Register';
 import ProductCatalogPage from './pages/ProductCatalogPage';
 import ProductManagementPage from './pages/ProductManagementPage';
+import CheckoutPage from './pages/CheckoutPage';
+import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
 import PublicRoute from './components/PublicRoute';
 import RouteGuard from './components/guards/RouteGuard';
 import RoleBasedRedirect from './components/RoleBasedRedirect';
@@ -50,6 +52,18 @@ const AppContent: React.FC = () => {
         <Route path="/admin/products" element={
           <RouteGuard>
             <ProductManagementPage />
+          </RouteGuard>
+        } />
+        
+        <Route path="/checkout" element={
+          <RouteGuard>
+            <CheckoutPage />
+          </RouteGuard>
+        } />
+        
+        <Route path="/checkout/success" element={
+          <RouteGuard>
+            <CheckoutSuccessPage />
           </RouteGuard>
         } />
         

@@ -10,6 +10,7 @@ interface CartContextType {
   removeFromCart: (cartItemId: number) => Promise<void>;
   clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
+  processCheckout: () => Promise<boolean>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -176,6 +177,31 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
   };
 
+  const processCheckout = async (): Promise<boolean> => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      dispatch({ type: 'CLEAR_ERROR' });
+
+      const response = await fetch('/api/cart/checkout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al procesar la compra');
+      }
+
+      const result = await response.json();
+      dispatch({ type: 'SET_CART', payload: null }); // Limpiar carrito después del checkout
+      return result.success;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      return false;
+    }
+  };
+
   // Cargar carrito al montar el componente
   useEffect(() => {
     refreshCart();
@@ -190,6 +216,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     removeFromCart,
     clearCart,
     refreshCart,
+    processCheckout,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
