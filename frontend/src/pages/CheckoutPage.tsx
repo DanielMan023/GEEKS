@@ -254,13 +254,23 @@ const CheckoutPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={isProcessing}
-                    className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-                  >
-                    {isProcessing ? 'Procesando...' : `Pagar ${formatPrice(cart.total)}`}
-                  </button>
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => navigate(-1)}
+                      className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                      disabled={isProcessing}
+                    >
+                      Volver atrás
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isProcessing}
+                      className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                    >
+                      {isProcessing ? 'Procesando...' : `Pagar ${formatPrice(cart.total)}`}
+                    </button>
+                  </div>
                 </form>
               </div>
 
