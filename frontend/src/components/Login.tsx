@@ -88,7 +88,7 @@ export const Login = (): React.ReactElement => {
               id="email"
               name="email"
               type="email"
-              label="Correo o usuario"
+              label="Correo"
               value={formData.email}
               onChange={handleChange}
               required
