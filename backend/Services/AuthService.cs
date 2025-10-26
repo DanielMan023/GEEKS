@@ -176,6 +176,17 @@ namespace GEEKS.Services
             }
         }
 
+        public async Task<User> FindUserByEmail(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task UpdatePassword(User user, string newPassword)
+        {
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _context.SaveChangesAsync();
+        }
+
         private string GenerateJwtToken(User user)
         {
             var claims = new[]

@@ -94,6 +94,21 @@ namespace GEEKS.Controllers
             return Ok(new { message = "Sesión cerrada exitosamente" });
         }
 
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetRequest)
+        {
+            if (string.IsNullOrEmpty(resetRequest.Email) || string.IsNullOrEmpty(resetRequest.NewPassword))
+                return BadRequest(new { success = false, message = "Email y nueva contraseña son requeridos." });
+
+            var user = await _authService.FindUserByEmail(resetRequest.Email);
+            if (user == null)
+                return NotFound(new { success = false, message = "Usuario no encontrado." });
+
+            await _authService.UpdatePassword(user, resetRequest.NewPassword);
+
+            return Ok(new { success = true, message = "Contraseña actualizada correctamente." });
+        }
+
         [HttpGet("validate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

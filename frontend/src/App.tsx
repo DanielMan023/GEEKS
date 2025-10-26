@@ -14,6 +14,7 @@ import RouteGuard from './components/guards/RouteGuard';
 import RoleBasedRedirect from './components/RoleBasedRedirect';
 import { CartWidget } from './components/cart';
 import ChatbotWidget from './components/chatbot/ChatbotWidget';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 const AppContent: React.FC = () => {
   const location = useLocation();
@@ -40,6 +41,8 @@ const AppContent: React.FC = () => {
             <Register />
           </PublicRoute>
         } />
+        
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         
         {/* Rutas protegidas - solo accesibles si estás autenticado */}
         
