@@ -20,7 +20,6 @@ const ResetPasswordPage: React.FC = () => {
     setSuccess(null);
     setError(null);
     try {
-      // Supón que existe una ruta: POST /api/auth/reset-password con {email, newPassword}
       const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -39,49 +38,72 @@ const ResetPasswordPage: React.FC = () => {
       setLoading(false);
     }
   };
-  
+
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#0C0C0C]">
-      <section className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-gray-900 text-center">Restablecer contraseña</h1>
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={form.email}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-            />
+    <main className="min-h-screen bg-[#0C0C0C] flex">
+      {/* Sección izquierda: Logo, igual que en login */}
+      <section className="hidden lg:flex lg:w-1/2 bg-[#0C0C0C] items-center justify-center">
+        <img 
+          src="/geeks.png" 
+          alt="GEEKS Logo" 
+          className="w-[960px] h-[960px]"
+        />
+      </section>
+
+      {/* Sección derecha: Panel de reset similar a login */}
+      <section className="w-full lg:w-1/2 bg-[#424242] flex items-center justify-center">
+        <div className="w-full max-w-lg px-8 py-12">
+          <header className="text-left mb-8">
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Restablecer contraseña
+            </h1>
+            <p className="text-gray-300">Ingresa tu correo y una nueva contraseña</p>
+          </header>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-white mb-1">Correo electrónico</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={form.email}
+                onChange={handleChange}
+                autoComplete="email"
+                className="w-full px-3 py-3 bg-[#424242] border border-black rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white placeholder-gray-400"
+                placeholder="Ingresa tu correo"
+              />
+            </div>
+            <div>
+              <label htmlFor="newPassword" className="block text-sm font-medium text-white mb-1">Nueva contraseña</label>
+              <input
+                id="newPassword"
+                name="newPassword"
+                type="password"
+                required
+                minLength={6}
+                value={form.newPassword}
+                onChange={handleChange}
+                autoComplete="new-password"
+                className="w-full px-3 py-3 bg-[#424242] border border-black rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white placeholder-gray-400"
+                placeholder="Nueva contraseña"
+              />
+            </div>
+            {success && <p className="text-green-400 text-center mt-2">{success}</p>}
+            {error && <p className="text-red-400 text-center mt-2">{error}</p>}
+            <button
+              type="submit"
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium transition-colors"
+              disabled={loading}
+            >
+              {loading ? 'Enviando...' : 'Restablecer contraseña'}
+            </button>
+          </form>
+          <div className="text-center mt-6">
+            <button onClick={() => navigate('/login')} className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">
+              Volver al login
+            </button>
           </div>
-          <div>
-            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">Nueva contraseña</label>
-            <input
-              id="newPassword"
-              name="newPassword"
-              type="password"
-              required
-              minLength={6}
-              value={form.newPassword}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"
-            disabled={loading}
-          >
-            {loading ? 'Enviando...' : 'Restablecer contraseña'}
-          </button>
-        </form>
-        {success && <p className="text-green-600 text-center mt-4">{success}</p>}
-        {error && <p className="text-red-600 text-center mt-4">{error}</p>}
-        <div className="text-center mt-4">
-          <button onClick={() => navigate('/login')} className="text-blue-400 hover:text-blue-600 text-sm">Volver al login</button>
         </div>
       </section>
     </main>

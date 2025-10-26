@@ -20,7 +20,7 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   
   // Rutas donde NO debe aparecer el carrito ni el chatbot
-  const hideWidgetRoutes = ['/login', '/register'];
+  const hideWidgetRoutes = ['/login', '/register', '/reset-password'];
   const shouldShowWidgets = !hideWidgetRoutes.includes(location.pathname);
 
   return (
