@@ -104,7 +104,10 @@ namespace GEEKS.Controllers
             if (user == null)
                 return NotFound(new { success = false, message = "Usuario no encontrado." });
 
-            await _authService.UpdatePassword(user, resetRequest.NewPassword);
+            var changed = await _authService.UpdatePassword(user, resetRequest.NewPassword);
+
+            if (!changed)
+                return BadRequest(new { success = false, message = "La nueva contraseña debe ser diferente a la anterior." });
 
             return Ok(new { success = true, message = "Contraseña actualizada correctamente." });
         }

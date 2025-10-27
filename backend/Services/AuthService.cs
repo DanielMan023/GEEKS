@@ -181,10 +181,17 @@ namespace GEEKS.Services
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public async Task UpdatePassword(User user, string newPassword)
+        public async Task<bool> UpdatePassword(User user, string newPassword)
         {
+            // Verificar si la nueva contraseña es igual que la anterior
+            if (BCrypt.Net.BCrypt.Verify(newPassword, user.PasswordHash))
+            {
+                // No realizar cambio
+                return false;
+            }
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
             await _context.SaveChangesAsync();
+            return true;
         }
 
         private string GenerateJwtToken(User user)
