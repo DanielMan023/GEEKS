@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Search, Filter, Eye, CheckCircle, XCircle, Clock, Truck, RefreshCw } from 'lucide-react';
+import { Package, Search, Eye, Clock, Truck, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
+import OrderStatusProgress from '../components/OrderStatusProgress';
 import { useSidebar } from '../contexts/SidebarContext';
-import { useRole } from '../hooks/useRole';
+import { useAuth } from '../contexts/AuthContext';
 
 interface OrderItem {
   id: number;
@@ -35,9 +36,9 @@ interface Order {
   orderItems: OrderItem[];
 }
 
-const OrdersManagementPage: React.FC = () => {
+const MyOrdersPage: React.FC = () => {
   const { isCollapsed } = useSidebar();
-  const { isAdmin } = useRole();
+  const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,6 @@ const OrdersManagementPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
-  const [updatingStatus, setUpdatingStatus] = useState<number | null>(null);
 
   const statusOptions = [
     { value: 'all', label: 'Todos los estados' },
@@ -69,16 +69,21 @@ const OrdersManagementPage: React.FC = () => {
     Delivered: CheckCircle
   };
 
+  const statusLabels = {
+    Pending: 'Pendiente',
+    Processing: 'Procesando',
+    Shipped: 'Enviado',
+    Delivered: 'Entregado'
+  };
+
   useEffect(() => {
-    if (isAdmin) {
-      fetchOrders();
-    }
-  }, [isAdmin]);
+    fetchOrders();
+  }, []);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/order/all', {
+      const response = await fetch('/api/order/my-orders', {
         credentials: 'include'
       });
 
@@ -95,45 +100,9 @@ const OrdersManagementPage: React.FC = () => {
     }
   };
 
-  const updateOrderStatus = async (orderId: number, newStatus: string) => {
-    try {
-      setUpdatingStatus(orderId);
-      const response = await fetch(`/api/order/${orderId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al actualizar el estado');
-      }
-
-      // Actualizar la lista local
-      setOrders(prev => prev.map(order => 
-        order.id === orderId 
-          ? { ...order, status: newStatus }
-          : order
-      ));
-
-      // Cerrar modal si está abierto
-      if (selectedOrder?.id === orderId) {
-        setShowOrderModal(false);
-        setSelectedOrder(null);
-      }
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Error al actualizar estado');
-    } finally {
-      setUpdatingStatus(null);
-    }
-  };
-
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
+                         order.customerName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -156,22 +125,6 @@ const OrdersManagementPage: React.FC = () => {
     });
   };
 
-  if (!isAdmin) {
-    return (
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        <div className={`flex-1 overflow-y-auto transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
-          <div className="p-6">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">Acceso Denegado</h1>
-              <p className="text-gray-600">No tienes permisos para acceder a esta página.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
@@ -180,8 +133,8 @@ const OrdersManagementPage: React.FC = () => {
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestión de Pedidos</h1>
-              <p className="text-gray-600">Administra y gestiona todos los pedidos de la tienda</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Mis Pedidos</h1>
+              <p className="text-gray-600">Revisa el estado de tus compras y pedidos</p>
             </div>
 
             {/* Filtros y búsqueda */}
@@ -191,14 +144,14 @@ const OrdersManagementPage: React.FC = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
                     type="text"
-                    placeholder="Buscar por número, cliente o email..."
+                    placeholder="Buscar por número de pedido..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                 </div>
                 <div className="relative">
-                  <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -241,7 +194,13 @@ const OrdersManagementPage: React.FC = () => {
               ) : filteredOrders.length === 0 ? (
                 <div className="p-8 text-center">
                   <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No se encontraron pedidos</p>
+                  <p className="text-gray-600 mb-4">No tienes pedidos aún</p>
+                  <a
+                    href="/catalog"
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors inline-block"
+                  >
+                    Ver Productos
+                  </a>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -250,9 +209,6 @@ const OrdersManagementPage: React.FC = () => {
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Pedido
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Cliente
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Estado
@@ -284,19 +240,9 @@ const OrdersManagementPage: React.FC = () => {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div>
-                                <div className="text-sm font-medium text-gray-900">
-                                  {order.customerName}
-                                </div>
-                                <div className="text-sm text-gray-500">
-                                  {order.customerEmail}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[order.status as keyof typeof statusColors]}`}>
                                 <StatusIcon className="w-3 h-3 mr-1" />
-                                {order.status}
+                                {statusLabels[order.status as keyof typeof statusLabels]}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -306,48 +252,16 @@ const OrdersManagementPage: React.FC = () => {
                               {formatDate(order.createdAtDateTime)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <div className="flex space-x-2">
-                                <button
-                                  onClick={() => {
-                                    setSelectedOrder(order);
-                                    setShowOrderModal(true);
-                                  }}
-                                  className="text-green-600 hover:text-green-900 p-1"
-                                  title="Ver detalles"
-                                >
-                                  <Eye className="w-4 h-4" />
-                                </button>
-                                {order.status === 'Pending' && (
-                                  <button
-                                    onClick={() => updateOrderStatus(order.id, 'Processing')}
-                                    disabled={updatingStatus === order.id}
-                                    className="text-blue-600 hover:text-blue-900 p-1 disabled:opacity-50"
-                                    title="Marcar como procesando"
-                                  >
-                                    <RefreshCw className={`w-4 h-4 ${updatingStatus === order.id ? 'animate-spin' : ''}`} />
-                                  </button>
-                                )}
-                                {order.status === 'Processing' && (
-                                  <button
-                                    onClick={() => updateOrderStatus(order.id, 'Shipped')}
-                                    disabled={updatingStatus === order.id}
-                                    className="text-purple-600 hover:text-purple-900 p-1 disabled:opacity-50"
-                                    title="Marcar como enviado"
-                                  >
-                                    <Truck className={`w-4 h-4 ${updatingStatus === order.id ? 'animate-pulse' : ''}`} />
-                                  </button>
-                                )}
-                                {order.status === 'Shipped' && (
-                                  <button
-                                    onClick={() => updateOrderStatus(order.id, 'Delivered')}
-                                    disabled={updatingStatus === order.id}
-                                    className="text-green-600 hover:text-green-900 p-1 disabled:opacity-50"
-                                    title="Marcar como entregado"
-                                  >
-                                    <CheckCircle className={`w-4 h-4 ${updatingStatus === order.id ? 'animate-pulse' : ''}`} />
-                                  </button>
-                                )}
-                              </div>
+                              <button
+                                onClick={() => {
+                                  setSelectedOrder(order);
+                                  setShowOrderModal(true);
+                                }}
+                                className="text-green-600 hover:text-green-900 p-1"
+                                title="Ver detalles"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
                             </td>
                           </tr>
                         );
@@ -381,6 +295,12 @@ const OrdersManagementPage: React.FC = () => {
                 </button>
               </div>
 
+              {/* Progreso del pedido */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Estado del Pedido</h3>
+                <OrderStatusProgress status={selectedOrder.status} />
+              </div>
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Información del pedido */}
                 <div>
@@ -389,7 +309,7 @@ const OrdersManagementPage: React.FC = () => {
                     <div>
                       <span className="font-medium text-gray-700">Estado:</span>
                       <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[selectedOrder.status as keyof typeof statusColors]}`}>
-                        {selectedOrder.status}
+                        {statusLabels[selectedOrder.status as keyof typeof statusLabels]}
                       </span>
                     </div>
                     <div>
@@ -421,9 +341,9 @@ const OrdersManagementPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Información del cliente */}
+                {/* Información de envío */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Información del Cliente</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Información de Envío</h3>
                   <div className="space-y-3">
                     <div>
                       <span className="font-medium text-gray-700">Nombre:</span>
@@ -490,7 +410,7 @@ const OrdersManagementPage: React.FC = () => {
               )}
 
               {/* Acciones */}
-              <div className="mt-6 flex justify-end space-x-3">
+              <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => {
                     setShowOrderModal(false);
@@ -500,33 +420,6 @@ const OrdersManagementPage: React.FC = () => {
                 >
                   Cerrar
                 </button>
-                {selectedOrder.status === 'Pending' && (
-                  <button
-                    onClick={() => updateOrderStatus(selectedOrder.id, 'Processing')}
-                    disabled={updatingStatus === selectedOrder.id}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                  >
-                    {updatingStatus === selectedOrder.id ? 'Procesando...' : 'Marcar como Procesando'}
-                  </button>
-                )}
-                {selectedOrder.status === 'Processing' && (
-                  <button
-                    onClick={() => updateOrderStatus(selectedOrder.id, 'Shipped')}
-                    disabled={updatingStatus === selectedOrder.id}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors"
-                  >
-                    {updatingStatus === selectedOrder.id ? 'Procesando...' : 'Marcar como Enviado'}
-                  </button>
-                )}
-                {selectedOrder.status === 'Shipped' && (
-                  <button
-                    onClick={() => updateOrderStatus(selectedOrder.id, 'Delivered')}
-                    disabled={updatingStatus === selectedOrder.id}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
-                  >
-                    {updatingStatus === selectedOrder.id ? 'Procesando...' : 'Marcar como Entregado'}
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -536,4 +429,4 @@ const OrdersManagementPage: React.FC = () => {
   );
 };
 
-export default OrdersManagementPage;
+export default MyOrdersPage;

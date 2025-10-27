@@ -8,6 +8,7 @@ import Register from './components/Register';
 import ProductCatalogPage from './pages/ProductCatalogPage';
 import ProductManagementPage from './pages/ProductManagementPage';
 import OrdersManagementPage from './pages/OrdersManagementPage';
+import MyOrdersPage from './pages/MyOrdersPage';
 import CheckoutPage from './pages/CheckoutPage';
 import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
 import PublicRoute from './components/PublicRoute';
@@ -50,6 +51,12 @@ const AppContent: React.FC = () => {
         <Route path="/catalog" element={
           <RouteGuard>
             <ProductCatalogPage />
+          </RouteGuard>
+        } />
+        
+        <Route path="/my-orders" element={
+          <RouteGuard>
+            <MyOrdersPage />
           </RouteGuard>
         } />
         

@@ -1,4 +1,4 @@
-import { Folder, Settings, LayoutPanelLeft, ShoppingBag, Package } from 'lucide-react';
+import { Folder, Settings, LayoutPanelLeft, ShoppingBag, Package, ShoppingCart } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { twMerge } from '../utils';
 import { useSidebar } from '../contexts/SidebarContext';
@@ -42,6 +42,13 @@ const Sidebar = () => {
       label: 'Catálogo', 
       to: '/catalog', 
       permission: 'canViewCatalog',
+      show: true // Siempre visible para usuarios autenticados
+    },
+    { 
+      icon: ShoppingCart, 
+      label: 'Mis Pedidos', 
+      to: '/my-orders', 
+      permission: 'canViewMyOrders',
       show: true // Siempre visible para usuarios autenticados
     },
   ];
