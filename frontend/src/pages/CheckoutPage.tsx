@@ -32,18 +32,20 @@ const CheckoutPage: React.FC = () => {
 
     try {
       // Procesar el checkout (esto descontará el stock automáticamente)
-      const success = await processCheckout();
+      const success = await processCheckout(formData);
       
       if (success) {
         // Redirigir a página de éxito
         navigate('/checkout/success');
       } else {
         // Mostrar error si el checkout falló
+        console.error('Error en checkout: success = false');
         alert('Error al procesar la compra. Por favor, verifica el stock disponible.');
       }
     } catch (error) {
       console.error('Error en checkout:', error);
-      alert('Error al procesar la compra. Por favor, intenta de nuevo.');
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      alert(`Error al procesar la compra: ${errorMessage}`);
     } finally {
       setIsProcessing(false);
     }

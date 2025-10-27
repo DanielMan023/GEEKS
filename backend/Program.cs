@@ -71,6 +71,9 @@ builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 // SERVICIOS DEL CARRITO
 builder.Services.AddScoped<ICartService, CartService>();
 
+// SERVICIOS DE PEDIDOS
+builder.Services.AddScoped<IOrderService, OrderService>();
+
 // Contexto de base de datos
 var connectionString = builder.Configuration.GetConnectionString("PostgreSQLConnection");
 builder.Services.AddDbContext<DBContext>(options =>

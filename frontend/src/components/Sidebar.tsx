@@ -1,4 +1,4 @@
-import { Folder, Settings, LayoutPanelLeft, ShoppingBag } from 'lucide-react';
+import { Folder, Settings, LayoutPanelLeft, ShoppingBag, Package } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { twMerge } from '../utils';
 import { useSidebar } from '../contexts/SidebarContext';
@@ -29,6 +29,13 @@ const Sidebar = () => {
       to: '/admin/products', 
       permission: 'canViewProducts',
       show: permissions.canViewProducts && isAdmin
+    },
+    { 
+      icon: Package, 
+      label: 'Pedidos', 
+      to: '/admin/orders', 
+      permission: 'canViewOrders',
+      show: isAdmin
     },
     { 
       icon: ShoppingBag, 

@@ -13,10 +13,12 @@ namespace GEEKS.Controllers
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;
+        private readonly IOrderService _orderService;
 
-        public CartController(ICartService cartService)
+        public CartController(ICartService cartService, IOrderService orderService)
         {
             _cartService = cartService;
+            _orderService = orderService;
         }
 
         [HttpGet]
@@ -169,23 +171,25 @@ namespace GEEKS.Controllers
         }
 
         [HttpPost("checkout")]
-        public async Task<ActionResult<ServiceResponse<bool>>> ProcessCheckout()
+        public async Task<ActionResult<ServiceResponse<OrderDTO>>> ProcessCheckout([FromBody] CreateOrderDTO createOrderDto)
         {
             try
             {
                 var userId = GetCurrentUserId();
-                var result = await _cartService.ProcessCheckoutAsync(userId);
+                
+                // Crear el pedido (esto incluye la validación del carrito y el descuento de stock)
+                var order = await _orderService.CreateOrderAsync(userId, createOrderDto);
 
-                return Ok(new ServiceResponse<bool>
+                return Ok(new ServiceResponse<OrderDTO>
                 {
                     Success = true,
-                    Data = result,
+                    Data = order,
                     Message = "Compra procesada exitosamente"
                 });
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new ServiceResponse<bool>
+                return BadRequest(new ServiceResponse<OrderDTO>
                 {
                     Success = false,
                     Message = ex.Message
@@ -193,7 +197,7 @@ namespace GEEKS.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ServiceResponse<bool>
+                return BadRequest(new ServiceResponse<OrderDTO>
                 {
                     Success = false,
                     Message = $"Error al procesar la compra: {ex.Message}"
