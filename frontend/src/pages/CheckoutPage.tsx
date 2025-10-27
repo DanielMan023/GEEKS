@@ -31,8 +31,22 @@ const CheckoutPage: React.FC = () => {
     setIsProcessing(true);
 
     try {
+      // Transformar los datos del formulario al formato esperado por el backend
+      const orderData = {
+        customerName: `${formData.firstName} ${formData.lastName}`.trim(),
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        shippingAddress: formData.address,
+        city: formData.city,
+        zipCode: formData.zipCode,
+        paymentMethod: formData.paymentMethod,
+        notes: ''
+      };
+
+      console.log('Datos del pedido a enviar:', orderData);
+
       // Procesar el checkout (esto descontará el stock automáticamente)
-      const success = await processCheckout(formData);
+      const success = await processCheckout(orderData);
       
       if (success) {
         // Redirigir a página de éxito
