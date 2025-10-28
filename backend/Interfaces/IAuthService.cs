@@ -1,5 +1,6 @@
 using GEEKS.Dto;
 using GEEKS.Utils;
+using GEEKS.Models;
 
 namespace GEEKS.Interfaces
 {
@@ -7,5 +8,7 @@ namespace GEEKS.Interfaces
     {
         Task<ServiceResponse<dynamic>> Register(RegisterDTO registerRequest);
         Task<ServiceResponse<dynamic>> Login(LoginDTO loginRequest);
+        Task<User> FindUserByEmail(string email);
+        Task<bool> UpdatePassword(User user, string newPassword);
     }
 }

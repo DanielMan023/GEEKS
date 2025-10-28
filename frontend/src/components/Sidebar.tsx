@@ -1,4 +1,4 @@
-import { LayoutDashboard, Building, Folder, ClipboardList, CalendarCheck, Users, Headphones, Sun, Settings, LayoutPanelLeft, ShoppingBag } from 'lucide-react';
+import { Folder, Settings, LayoutPanelLeft, ShoppingBag, Package, ShoppingCart } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { twMerge } from '../utils';
 import { useSidebar } from '../contexts/SidebarContext';
@@ -24,20 +24,6 @@ const Sidebar = () => {
   // Menú base que todos pueden ver
   const baseMenuItems = [
     { 
-      icon: LayoutDashboard, 
-      label: 'Dashboard', 
-      to: '/dashboard', 
-      permission: 'canViewDashboard',
-      show: isAdmin // Solo admin ve el dashboard
-    },
-    { 
-      icon: Building, 
-      label: 'Inventarios', 
-      to: '/dashboard/inventarios/lista', 
-      permission: 'canViewInventories',
-      show: permissions.canViewInventories && isAdmin
-    },
-    { 
       icon: Folder, 
       label: 'Productos', 
       to: '/admin/products', 
@@ -45,18 +31,11 @@ const Sidebar = () => {
       show: permissions.canViewProducts && isAdmin
     },
     { 
-      icon: ClipboardList, 
+      icon: Package, 
       label: 'Pedidos', 
-      to: '/dashboard/pedidos/lista', 
+      to: '/admin/orders', 
       permission: 'canViewOrders',
-      show: permissions.canViewOrders && isAdmin
-    },
-    { 
-      icon: CalendarCheck, 
-      label: 'Compras', 
-      to: '/dashboard/compras/lista', 
-      permission: 'canViewPurchases',
-      show: permissions.canViewPurchases && isAdmin
+      show: isAdmin
     },
     { 
       icon: ShoppingBag, 
@@ -65,35 +44,27 @@ const Sidebar = () => {
       permission: 'canViewCatalog',
       show: true // Siempre visible para usuarios autenticados
     },
+    { 
+      icon: ShoppingCart, 
+      label: 'Mis Pedidos', 
+      to: '/my-orders', 
+      permission: 'canViewMyOrders',
+      show: true // Siempre visible para usuarios autenticados
+    },
   ];
 
   // Menú solo para administradores
-  const adminMenuItems = [
-    { 
-      icon: Users, 
-      label: 'Usuarios', 
-      to: '/dashboard/usuarios/lista', 
-      permission: 'canViewUsers',
-      show: permissions.canViewUsers
-    },
-    { 
-      icon: Headphones, 
-      label: 'Usuarios Administrativos', 
-      to: '/dashboard/usuarios-administrativos/lista', 
-      permission: 'canViewAdminUsers',
-      show: permissions.canViewAdminUsers
-    },
-  ];
+  const adminMenuItems = [] as const;
 
   // Combinar menús y filtrar por permisos
   const allMenuItems = [...baseMenuItems, ...adminMenuItems].filter(item => item.show);
 
   return (
     <div className={twMerge(
-      "fixed left-0 top-0 z-40 h-screen transition-transform duration-300 ease-in-out",
+      "fixed inset-y-0 left-0 z-40 h-screen transition-transform duration-300 ease-in-out overflow-x-hidden",
       isCollapsed ? "w-16" : "w-64"
     )}>
-      <div className="flex h-full flex-col bg-[#1E1E1E] border-r border-gray-700">
+      <div className="flex h-full flex-col bg-[#1E1E1E] border-r border-gray-700 overflow-y-auto">
         {/* Header */}
         <div className="flex h-16 items-center justify-between px-4 border-b border-gray-700">
           {!isCollapsed && (

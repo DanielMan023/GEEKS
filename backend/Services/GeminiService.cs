@@ -109,15 +109,14 @@ namespace GEEKS.Services
                     var errorContent = await response.Content.ReadAsStringAsync();
                     _logger.LogError("Error de Gemini: {Status} - {Content}", response.StatusCode, errorContent);
                     
-                    // Fallback a respuestas inteligentes si Gemini falla
-                    _logger.LogInformation("Usando fallback inteligente debido a error de Gemini");
-                    return GenerateIntelligentResponse(userMessage, context);
+                    // Retornar error específico en lugar de fallback
+                    return $"❌ Error de Gemini API: {response.StatusCode} - {errorContent}";
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error obteniendo respuesta de Gemini Pro");
-                return "Lo siento, estoy teniendo problemas técnicos con mi IA. ¿Puedes intentar de nuevo?";
+                return $"❌ Error técnico: {ex.Message}";
             }
         }
 

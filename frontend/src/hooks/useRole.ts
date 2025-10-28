@@ -19,7 +19,7 @@ export const useRole = () => {
   const isUser = user?.role?.name === 'User';
 
   const permissions: UserPermissions = {
-    canViewDashboard: true, // Todos pueden ver el dashboard
+    canViewDashboard: false,
     canViewInventories: isAdmin || isUser, // Ambos roles pueden ver inventarios
     canViewProducts: isAdmin || isUser, // Ambos roles pueden ver productos
     canViewOrders: isAdmin || isUser, // Ambos roles pueden ver pedidos
@@ -37,7 +37,7 @@ export const useRole = () => {
   const canAccessRoute = (route: string): boolean => {
     switch (route) {
       case '/dashboard':
-        return permissions.canViewDashboard;
+        return false;
       case '/dashboard/inventarios':
       case '/dashboard/inventarios/lista':
         return permissions.canViewInventories;

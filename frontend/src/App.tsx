@@ -5,20 +5,24 @@ import { SidebarProvider } from './contexts/SidebarContext';
 import { CartProvider } from './contexts/CartContext';
 import Login from './components/Login';
 import Register from './components/Register';
-import Dashboard from './components/Dashboard';
 import ProductCatalogPage from './pages/ProductCatalogPage';
 import ProductManagementPage from './pages/ProductManagementPage';
+import OrdersManagementPage from './pages/OrdersManagementPage';
+import MyOrdersPage from './pages/MyOrdersPage';
+import CheckoutPage from './pages/CheckoutPage';
+import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
 import PublicRoute from './components/PublicRoute';
 import RouteGuard from './components/guards/RouteGuard';
 import RoleBasedRedirect from './components/RoleBasedRedirect';
 import { CartWidget } from './components/cart';
 import ChatbotWidget from './components/chatbot/ChatbotWidget';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 const AppContent: React.FC = () => {
   const location = useLocation();
   
   // Rutas donde NO debe aparecer el carrito ni el chatbot
-  const hideWidgetRoutes = ['/login', '/register'];
+  const hideWidgetRoutes = ['/login', '/register', '/reset-password'];
   const shouldShowWidgets = !hideWidgetRoutes.includes(location.pathname);
 
   return (
@@ -40,12 +44,9 @@ const AppContent: React.FC = () => {
           </PublicRoute>
         } />
         
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        
         {/* Rutas protegidas - solo accesibles si estás autenticado */}
-        <Route path="/dashboard/*" element={
-          <RouteGuard>
-            <Dashboard />
-          </RouteGuard>
-        } />
         
         <Route path="/catalog" element={
           <RouteGuard>
@@ -53,9 +54,33 @@ const AppContent: React.FC = () => {
           </RouteGuard>
         } />
         
+        <Route path="/my-orders" element={
+          <RouteGuard>
+            <MyOrdersPage />
+          </RouteGuard>
+        } />
+        
         <Route path="/admin/products" element={
           <RouteGuard>
             <ProductManagementPage />
+          </RouteGuard>
+        } />
+        
+        <Route path="/admin/orders" element={
+          <RouteGuard>
+            <OrdersManagementPage />
+          </RouteGuard>
+        } />
+        
+        <Route path="/checkout" element={
+          <RouteGuard>
+            <CheckoutPage />
+          </RouteGuard>
+        } />
+        
+        <Route path="/checkout/success" element={
+          <RouteGuard>
+            <CheckoutSuccessPage />
           </RouteGuard>
         } />
         

@@ -216,19 +216,21 @@ namespace GEEKS.Controllers
             }
         }
 
-        [HttpGet("diagnose-openai")]
-        [AllowAnonymous] // Endpoint público para diagnosticar OpenAI
+        [HttpGet("diagnose-gemini")]
+        [AllowAnonymous] // Endpoint público para diagnosticar Gemini
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<object> DiagnoseOpenAI()
+        public ActionResult<object> DiagnoseGemini()
         {
             try
             {
                 var configuration = HttpContext.RequestServices.GetRequiredService<IConfiguration>();
                 
-                var apiKey = configuration["OpenAI:ApiKey"];
-                var model = configuration["OpenAI:Model"];
-                var maxTokens = configuration["OpenAI:MaxTokens"];
-                var temperature = configuration["OpenAI:Temperature"];
+                var apiKey = configuration["GoogleCloud:ApiKey"];
+                var model = configuration["GoogleCloud:Model"];
+                var maxTokens = configuration["GoogleCloud:MaxTokens"];
+                var temperature = configuration["GoogleCloud:Temperature"];
+                var projectId = configuration["GoogleCloud:ProjectId"];
+                var location = configuration["GoogleCloud:Location"];
                 
                 var hasApiKey = !string.IsNullOrEmpty(apiKey);
                 var apiKeyLength = hasApiKey ? apiKey.Length : 0;
@@ -238,7 +240,7 @@ namespace GEEKS.Controllers
                 return Ok(new
                 {
                     timestamp = DateTime.UtcNow,
-                    openAIConfig = new
+                    geminiConfig = new
                     {
                         hasApiKey = hasApiKey,
                         apiKeyLength = apiKeyLength,
@@ -246,16 +248,18 @@ namespace GEEKS.Controllers
                         apiKeyEnd = apiKeyEnd,
                         model = model,
                         maxTokens = maxTokens,
-                        temperature = temperature
+                        temperature = temperature,
+                        projectId = projectId,
+                        location = location
                     },
-                    message = "Diagnóstico de configuración de OpenAI"
+                    message = "Diagnóstico de configuración de Gemini"
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error diagnosticando OpenAI");
+                _logger.LogError(ex, "Error diagnosticando Gemini");
                 return StatusCode(500, new { 
-                    message = "Error diagnosticando OpenAI", 
+                    message = "Error diagnosticando Gemini", 
                     error = ex.Message
                 });
             }

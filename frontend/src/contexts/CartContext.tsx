@@ -10,6 +10,7 @@ interface CartContextType {
   removeFromCart: (cartItemId: number) => Promise<void>;
   clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
+  processCheckout: (orderData: any) => Promise<boolean>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -176,6 +177,43 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
   };
 
+  const processCheckout = async (orderData: any): Promise<boolean> => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      dispatch({ type: 'CLEAR_ERROR' });
+
+      console.log('Enviando datos del pedido:', orderData);
+
+      const response = await fetch('/api/cart/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(orderData),
+      });
+
+      console.log('Respuesta del servidor:', response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error del servidor:', errorData);
+        throw new Error(errorData.message || 'Error al procesar la compra');
+      }
+
+      const result = await response.json();
+      console.log('Resultado del checkout:', result);
+      
+      dispatch({ type: 'SET_CART', payload: null }); // Limpiar carrito después del checkout
+      return result.success;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      console.error('Error en processCheckout:', error);
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      throw error; // Re-lanzar el error para que el componente pueda manejarlo
+    }
+  };
+
   // Cargar carrito al montar el componente
   useEffect(() => {
     refreshCart();
@@ -190,6 +228,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     removeFromCart,
     clearCart,
     refreshCart,
+    processCheckout,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

@@ -104,7 +104,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await authService.register(userData);
       if (response.data?.user) {
-        setUser(response.data.user);
+        // NO hacer login automático después del registro
+        // setUser(response.data.user); // ← Comentado para evitar login automático
         return { success: true, message: response.message };
       } else {
         return { success: false, message: response.message || 'Error en el registro' };

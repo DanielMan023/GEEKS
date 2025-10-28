@@ -10,5 +10,6 @@ namespace GEEKS.Interfaces
         Task<CartDTO> RemoveFromCartAsync(int userId, RemoveFromCartDTO removeFromCartDto);
         Task<CartDTO> ClearCartAsync(int userId);
         Task<bool> CartExistsAsync(int userId);
+        Task<bool> ProcessCheckoutAsync(int userId);
     }
 }

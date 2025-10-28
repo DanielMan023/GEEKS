@@ -15,6 +15,8 @@ namespace GEEKS.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,6 +55,25 @@ namespace GEEKS.Data
                 .HasForeignKey(ci => ci.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Configuración de relaciones de pedidos
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.User)
+                .WithMany()
+                .HasForeignKey(o => o.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Product)
+                .WithMany()
+                .HasForeignKey(oi => oi.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Configuración de índices únicos
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
@@ -68,6 +89,10 @@ namespace GEEKS.Data
 
             modelBuilder.Entity<Product>()
                 .HasIndex(p => p.SKU)
+                .IsUnique();
+
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => o.OrderNumber)
                 .IsUnique();
         }
     }

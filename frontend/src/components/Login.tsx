@@ -88,7 +88,7 @@ export const Login = (): React.ReactElement => {
               id="email"
               name="email"
               type="email"
-              label="Correo o usuario"
+              label="Correo"
               value={formData.email}
               onChange={handleChange}
               required
@@ -114,7 +114,7 @@ export const Login = (): React.ReactElement => {
                 <p className="text-red-500 text-sm mt-1">{errors.password}</p>
               )}
               <div className="text-right mt-2">
-                <a href="#" className="text-blue-400 hover:text-blue-300 text-sm transition-colors">
+                <a href="#" className="text-blue-400 hover:text-blue-300 text-sm transition-colors" onClick={(e) => { e.preventDefault(); navigate('/reset-password'); }}>
                   ¿Olvidaste la contraseña?
                 </a>
               </div>

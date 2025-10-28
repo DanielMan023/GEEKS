@@ -176,13 +176,31 @@ namespace GEEKS.Services
             }
         }
 
+        public async Task<User> FindUserByEmail(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<bool> UpdatePassword(User user, string newPassword)
+        {
+            // Verificar si la nueva contraseña es igual que la anterior
+            if (BCrypt.Net.BCrypt.Verify(newPassword, user.PasswordHash))
+            {
+                // No realizar cambio
+                return false;
+            }
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         private string GenerateJwtToken(User user)
         {
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role?.Scope ?? "USER")
+                new Claim(ClaimTypes.Role, user.Role?.Name ?? "User")
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"] ?? string.Empty));

@@ -135,42 +135,45 @@ const ProductManagementPage: React.FC = () => {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       <SessionTimer />
-      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
-        <div className="p-6">
+      <div className={`flex-1 overflow-y-auto transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+        <div className="p-4 sm:p-6">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Gestión de Productos</h1>
-              <p className="text-gray-600">Administra el catálogo de productos</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Gestión de Productos</h1>
+              <p className="text-sm sm:text-base text-gray-600">Administra el catálogo de productos</p>
             </div>
-                         <div className="flex gap-3">
-               <button
-                 onClick={() => setShowCreateModal(true)}
-                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-               >
-                 <Plus size={20} />
-                 Nuevo Producto
-               </button>
-             </div>
+            <div className="flex gap-3 w-full sm:w-auto">
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm sm:text-base w-full sm:w-auto"
+              >
+                <Plus size={16} className="sm:hidden" />
+                <Plus size={20} className="hidden sm:block" />
+                <span className="sm:hidden">Nuevo</span>
+                <span className="hidden sm:inline">Nuevo Producto</span>
+              </button>
+            </div>
           </div>
 
           {/* Search and Filters */}
           <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                   <input
                     type="text"
                     placeholder="Buscar productos..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                   />
                 </div>
               </div>
-              <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-                <Filter size={20} />
+              <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm sm:text-base w-full sm:w-auto">
+                <Filter size={16} className="sm:hidden" />
+                <Filter size={20} className="hidden sm:block" />
                 Filtros
               </button>
             </div>
@@ -185,7 +188,8 @@ const ProductManagementPage: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
@@ -313,6 +317,110 @@ const ProductManagementPage: React.FC = () => {
                   </table>
                 </div>
 
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-4 p-4">
+                  {products.map((product) => {
+                    const stockStatus = getStockStatus(product.stock);
+                    return (
+                      <div key={product.id} className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                        {/* Product Info */}
+                        <div className="flex items-start gap-3">
+                          <div className="h-16 w-16 flex-shrink-0">
+                            {product.mainImage ? (
+                              <img
+                                className="h-16 w-16 rounded-lg object-cover"
+                                src={fileService.getImageUrl(product.mainImage)}
+                                alt={product.name}
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                              />
+                            ) : (
+                              <PlaceholderImage 
+                                width={64} 
+                                height={64} 
+                                text="No Image" 
+                                className="h-16 w-16 rounded-lg"
+                              />
+                            )}
+                            <PlaceholderImage 
+                              width={64} 
+                              height={64} 
+                              text="No Image" 
+                              className="h-16 w-16 rounded-lg hidden"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-medium text-gray-900 truncate">{product.name}</h3>
+                            <p className="text-xs text-gray-500">{product.brand}</p>
+                            <p className="text-xs text-gray-500">{product.categoryName}</p>
+                          </div>
+                        </div>
+
+                        {/* Price and Stock */}
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {formatPrice(product.price)}
+                            </div>
+                            {product.discountPrice && product.discountPrice < product.price && (
+                              <div className="text-xs text-red-600">
+                                {formatPrice(product.discountPrice)}
+                              </div>
+                            )}
+                          </div>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${stockStatus.color}`}>
+                            {stockStatus.text}
+                          </span>
+                        </div>
+
+                        {/* Status */}
+                        <div className="flex flex-wrap gap-2">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            product.state === 'Active' 
+                              ? 'text-green-800 bg-green-100' 
+                              : 'text-red-800 bg-red-100'
+                          }`}>
+                            {product.state === 'Active' ? 'Activo' : 'Inactivo'}
+                          </span>
+                          {product.isFeatured && (
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-yellow-800 bg-yellow-100">
+                              Destacado
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                          <button
+                            onClick={() => navigate(`/catalog/${product.id}`)}
+                            className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Ver producto"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => openEditModal(product)}
+                            className="text-green-600 hover:text-green-900 p-2 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Editar producto"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal(product)}
+                            className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Eliminar producto"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
@@ -434,17 +542,17 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Editar Producto</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl max-h-[95vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-bold">Editar Producto</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl">
             ✕
           </button>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Nombre del Producto *
@@ -454,7 +562,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
               />
             </div>
             
@@ -466,7 +574,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
                 type="text"
                 value={formData.brand}
                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
               />
             </div>
           </div>
@@ -479,23 +587,25 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
               value={formData.shortDescription}
               onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base resize-none"
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Precio *
               </label>
               <input
-                type="number"
+                type="text"
                 required
-                min="0"
-                step="0.01"
                 value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setFormData({ ...formData, price: parseFloat(value) || 0 });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0.00"
               />
             </div>
             
@@ -504,12 +614,14 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
                 Precio con Descuento
               </label>
               <input
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
                 value={formData.discountPrice || ''}
-                onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value ? parseFloat(e.target.value) : undefined })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setFormData({ ...formData, discountPrice: value ? parseFloat(value) : undefined });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0.00"
               />
             </div>
             
@@ -518,21 +630,24 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
                 Stock *
               </label>
               <input
-                type="number"
+                type="text"
                 required
-                min="0"
                 value={formData.stock}
-                onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setFormData({ ...formData, stock: parseInt(value) || 0 });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0"
               />
             </div>
           </div>
 
-                     <ImageUpload
-             onImageUploaded={(imageUrl) => setFormData({ ...formData, mainImage: imageUrl })}
-             currentImage={formData.mainImage}
-             className="col-span-2"
-           />
+          <ImageUpload
+            onImageUploaded={(imageUrl) => setFormData({ ...formData, mainImage: imageUrl })}
+            currentImage={formData.mainImage}
+            className="w-full"
+          />
 
           <div className="flex items-center">
             <input
@@ -547,17 +662,17 @@ const EditProductModal: React.FC<EditProductModalProps> = ({ product, onClose, o
             </label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm sm:text-base"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm sm:text-base"
             >
               Guardar Cambios
             </button>
@@ -576,33 +691,33 @@ interface DeleteProductModalProps {
 
 const DeleteProductModal: React.FC<DeleteProductModalProps> = ({ product, onClose, onConfirm }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-xs sm:max-w-md">
         <div className="flex items-center mb-4">
-          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-            <Trash2 className="h-6 w-6 text-red-600" />
+          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-red-100">
+            <Trash2 className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
           </div>
         </div>
         
         <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
             Eliminar Producto
           </h3>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-xs sm:text-sm text-gray-500 mb-6">
             ¿Estás seguro de que quieres eliminar "{product.name}"? Esta acción no se puede deshacer.
           </p>
         </div>
 
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-col sm:flex-row justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm sm:text-base"
           >
             Cancelar
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm sm:text-base"
           >
             Eliminar
           </button>

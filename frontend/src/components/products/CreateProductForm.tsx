@@ -34,17 +34,17 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Crear Nuevo Producto</h2>
-          <button onClick={onCancel} className="text-gray-500 hover:text-gray-700">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl max-h-[95vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-bold">Crear Nuevo Producto</h2>
+          <button onClick={onCancel} className="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl">
             ✕
           </button>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Nombre del Producto *
@@ -54,7 +54,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
               />
             </div>
             
@@ -66,7 +66,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
                 type="text"
                 value={formData.brand}
                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
               />
             </div>
           </div>
@@ -79,36 +79,38 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
               value={formData.shortDescription}
               onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base resize-none"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Descripción Completa
+              Descripción Completa *
             </label>
             <textarea
               required
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base resize-none"
             />
           </div>
 
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Precio *
               </label>
               <input
-                type="number"
+                type="text"
                 required
-                min="0"
-                step="0.01"
                 value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setFormData({ ...formData, price: parseFloat(value) || 0 });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0.00"
               />
             </div>
             
@@ -117,12 +119,14 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
                 Precio con Descuento
               </label>
               <input
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
                 value={formData.discountPrice || ''}
-                onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value ? parseFloat(e.target.value) : undefined })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setFormData({ ...formData, discountPrice: value ? parseFloat(value) : undefined });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0.00"
               />
             </div>
             
@@ -131,12 +135,15 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
                 Stock *
               </label>
               <input
-                type="number"
+                type="text"
                 required
-                min="0"
                 value={formData.stock}
-                onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setFormData({ ...formData, stock: parseInt(value) || 0 });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0"
               />
             </div>
 
@@ -145,17 +152,20 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
                 Stock Mínimo *
               </label>
               <input
-                type="number"
+                type="text"
                 required
-                min="0"
                 value={formData.minStock}
-                onChange={(e) => setFormData({ ...formData, minStock: parseInt(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  setFormData({ ...formData, minStock: parseInt(value) || 0 });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 SKU *
@@ -165,7 +175,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
                 required
                 value={formData.sku}
                 onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
               />
             </div>
 
@@ -177,7 +187,7 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
                 required
                 value={formData.categoryId}
                 onChange={(e) => setFormData({ ...formData, categoryId: parseInt(e.target.value) || 1 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
               >
                 <option value={1}>1 - Electrónicos</option>
                 <option value={2}>2 - Gaming</option>
@@ -191,21 +201,23 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
 
           <ImageUpload
             onImageUploaded={(imageUrl) => setFormData({ ...formData, mainImage: imageUrl })}
-            className="col-span-2"
+            className="w-full"
           />
 
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Peso (kg)
               </label>
               <input
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
                 value={formData.weight}
-                onChange={(e) => setFormData({ ...formData, weight: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setFormData({ ...formData, weight: parseFloat(value) || 0 });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0.00"
               />
             </div>
 
@@ -214,12 +226,14 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
                 Largo (cm)
               </label>
               <input
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
                 value={formData.length}
-                onChange={(e) => setFormData({ ...formData, length: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setFormData({ ...formData, length: parseFloat(value) || 0 });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0.00"
               />
             </div>
 
@@ -228,12 +242,14 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
                 Ancho (cm)
               </label>
               <input
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
                 value={formData.width}
-                onChange={(e) => setFormData({ ...formData, width: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setFormData({ ...formData, width: parseFloat(value) || 0 });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0.00"
               />
             </div>
 
@@ -242,12 +258,14 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
                 Alto (cm)
               </label>
               <input
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
                 value={formData.height}
-                onChange={(e) => setFormData({ ...formData, height: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setFormData({ ...formData, height: parseFloat(value) || 0 });
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="0.00"
               />
             </div>
           </div>
@@ -265,17 +283,17 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ onSubmit, onCance
             </label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm sm:text-base"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm sm:text-base"
             >
               Crear Producto
             </button>
