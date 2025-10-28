@@ -63,6 +63,8 @@ Ver `backend/SETUP.md` para instrucciones de configuración de API Keys y creden
    dotnet restore
    dotnet run
    ```
+   ![Backend ejcucion](imagenes/dotnet.png)
+
 
 4. **Ejecutar el frontend:**
    ```bash
@@ -70,11 +72,14 @@ Ver `backend/SETUP.md` para instrucciones de configuración de API Keys y creden
    npm install
    npm run dev
    ```
-   
+   ![Frontend ejecucion](imagenes/npm.png)
+
+
 ## 👤 Usuario Demo
 
 - **Email:** admin@example.com
 - **Password:** admin123
+![Primera vista](imagenes/primeravista.png)
 
 ## 🧪 Probar la API
 
