@@ -63,10 +63,13 @@ Ver `backend/SETUP.md` para instrucciones de configuración de API Keys y creden
    dotnet restore
    dotnet run
    ```
-
-4. **Abrir Swagger:**
-   - URL: http://localhost:5000/swagger
-   - Documentación completa de la API
+   
+3. **Ejecutar el frontend:**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
 
 ## 👤 Usuario Demo
 
